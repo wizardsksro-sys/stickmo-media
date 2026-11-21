@@ -1,0 +1,1288 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stickmo – Vytvor si</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: workshop bench — live preview on the left, tool drawer on the right; library is a full-width shelf */
+:root{
+  --bg:#121419; --panel:#1a1d24; --panel2:#232731; --line:#2f3440; --fg:#e9ebef; --muted:#959cab;
+  --accent:#f5b83d; --accent-ink:#1d1606; --danger:#ff6b6b; --ok:#5fd39a;
+  --ui:"Archivo","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",Consolas,ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 var(--ui)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{font-weight:900;font-size:17px;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.brand i{width:22px;height:22px;border-radius:50%;background:var(--accent);position:relative;display:inline-block}
+.brand i::before,.brand i::after{content:"";position:absolute;top:7px;width:3px;height:5px;border-radius:2px;background:var(--accent-ink)}
+.brand i::before{left:6px}.brand i::after{right:6px}
+.modes{display:flex;gap:4px;background:#0f1115;border:1px solid var(--line);border-radius:10px;padding:3px}
+.modes button{border:0;background:none;border-radius:7px;padding:7px 16px;font-weight:700;color:var(--muted)}
+.modes button.on{background:var(--accent);color:var(--accent-ink)}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:8px 13px;font-weight:600}
+.btn:hover{border-color:#495063;background:#2a2f3a}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.07);background:var(--accent)}
+.btn.small{padding:5px 10px;font-size:13px}
+.btn.danger{color:var(--danger)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+main{display:grid;grid-template-columns:minmax(0,1fr) 410px;height:calc(100% - 57px)}
+.left{display:flex;flex-direction:column;gap:12px;min-width:0;padding:16px max(16px,env(safe-area-inset-left,0px));overflow:auto}
+.stage{position:relative;flex:1;min-height:280px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  background:repeating-conic-gradient(#20242c 0 25%,#191c22 0 50%) 0 0/24px 24px}
+#cv{display:block;max-width:100%;max-height:62vh;width:auto;height:auto;touch-action:none}
+#cv.tool{cursor:crosshair}
+.stage.over{border-color:var(--accent)}
+.infobar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.infobar b{color:var(--fg);font-weight:500}
+.minis{display:flex;gap:10px;align-items:center}
+.mini{display:flex;align-items:center;gap:8px;border-radius:14px;padding:6px 12px;font-family:var(--ui);font-size:13px}
+.mini.dark{background:#2a2f3a;color:#e9ebef}.mini.light{background:#e9ecf2;color:#1b1e25}
+.mini canvas{width:24px;height:24px}.mini canvas.big{width:44px;height:44px}
+aside{border-left:1px solid var(--line);background:var(--panel);overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.box{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:#1d2028}
+.box h3{margin:0;font-size:14px;font-weight:800}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>.grow{flex:1;min-width:0}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:#0f1115;border:1px solid var(--line);border-radius:8px;padding:3px}
+.seg button{flex:1 1 auto;border:0;background:none;border-radius:6px;padding:6px 9px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.seg button.on{background:var(--panel2);color:var(--fg);box-shadow:0 0 0 1px #4a5163 inset}
+.seg.plat button.on{background:var(--accent);color:var(--accent-ink);box-shadow:none}
+.tip{font-size:13px;border-left:3px solid var(--accent);padding:6px 10px;background:#22201a;border-radius:0 6px 6px 0;margin:0}
+.note{color:var(--muted);font-size:12.5px;margin:0}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=color]{width:42px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;background:var(--panel2)}
+input[type=text],input:not([type]),textarea,select{background:#0f1115;border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+textarea{resize:vertical}
+.slider{display:grid;grid-template-columns:86px 1fr 54px;align-items:center;gap:10px;font-size:13px}
+.slider output{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.chk{display:flex;gap:8px;align-items:center}
+.chk input{accent-color:var(--accent);width:16px;height:16px}
+.sw{display:flex;gap:6px;flex-wrap:wrap}
+.sw button{width:28px;height:28px;border-radius:50%;border:2px solid transparent;padding:0}
+.sw button.on{border-color:#fff}
+.strip{display:flex;gap:6px;flex-wrap:wrap}
+.strip div{position:relative;width:54px;height:54px;border-radius:6px;background-size:cover;background-position:center;border:1px solid var(--line)}
+.strip button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:var(--danger);color:#fff;font-size:11px;line-height:1;padding:0}
+.strip div.cur{outline:2px solid var(--accent);outline-offset:1px}
+.strip.fr div{background-color:#e9ecf2;background-size:contain;background-repeat:no-repeat;cursor:pointer}
+.strip.fr div span{position:absolute;left:3px;bottom:1px;font:500 10px var(--mono);color:#1b1e25}
+.bar{height:6px;border-radius:3px;background:#0f1115;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--accent)}
+.result{font-size:13px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.result.ok{border-color:rgba(95,211,154,.55)}.result.warn{border-color:var(--danger)}
+#lib{padding:20px max(16px,env(safe-area-inset-left,0px));overflow:auto;height:calc(100% - 57px)}
+#lib h2{margin:0 0 4px;font-size:20px;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:16px}
+.card{border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden;display:flex;flex-direction:column}
+.card .th{aspect-ratio:1;display:grid;place-items:center;background:repeating-conic-gradient(#20242c 0 25%,#191c22 0 50%) 0 0/16px 16px}
+.card .th img,.card .th video{max-width:100%;max-height:100%;display:block}
+.card .meta{padding:10px;display:flex;flex-direction:column;gap:6px}
+.card .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card small{color:var(--muted);font-family:var(--mono);font-size:11.5px}
+.empty{color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:28px;text-align:center;margin-top:16px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:#2a2f3a;border:1px solid #454c5c;border-radius:8px;padding:10px 16px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100% - 32px)}
+#toast.show{opacity:1;transform:translateX(-50%)}
+#toast.err{border-color:var(--danger)}
+@media (max-width:920px){ main{grid-template-columns:1fr;height:auto} aside{border-left:0;border-top:1px solid var(--line);overflow:visible} .left{overflow:visible} #cv{max-height:54vh} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><i></i>Vytvor si</div>
+  <div class="modes" id="modes">
+    <button data-view="gif" class="on">GIF</button>
+    <button data-view="emoji">Emoji</button>
+    <button data-view="lib">Knižnica</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn danger" id="clearBtn" title="Zmazať všetko rozrobené a začať odznova"><svg viewBox="0 0 16 16" width="14" height="14" style="vertical-align:-2px;margin-right:6px" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.6 6.5v4.5M9.4 6.5v4.5"/></svg><span id="clearLbl">Zmazať</span></button>
+  <button class="btn primary" id="hdrExport">Uložiť</button>
+</header>
+
+<main id="work">
+<section class="left">
+  <div class="stage" id="stage"><canvas id="cv" width="512" height="512"></canvas></div>
+  <div class="infobar">
+    <span>Rozmer <b id="iDim">–</b></span><span>Dĺžka <b id="iDur">–</b></span><span>Súbor <b id="iFmt">–</b></span>
+    <div class="spacer"></div>
+    <div class="minis" id="minis" hidden>
+      <div class="mini dark"><canvas id="m1" width="48" height="48"></canvas>v správe</div>
+      <div class="mini light"><canvas id="m2" class="big" width="88" height="88"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<aside>
+  <!-- ================= GIF ================= -->
+  <div id="pGif" style="display:contents">
+    <div class="box">
+      <h3>Kam GIF dávaš</h3>
+      <div class="seg plat" data-k="G.plat">
+        <button data-v="facebook">Facebook</button><button data-v="instagram">Instagram</button><button data-v="tiktok">TikTok</button><button data-v="youtube">YouTube</button>
+        <button data-v="whatsapp">WhatsApp</button><button data-v="messenger">Messenger</button><button data-v="discord">Discord</button><button data-v="custom">Vlastné</button>
+      </div>
+      <p class="tip" id="gTip"></p>
+      <span class="lbl">Pomer strán</span>
+      <div class="seg" data-k="G.aspect"><button data-v="1:1">1:1 štvorec</button><button data-v="9:16">9:16 na výšku</button><button data-v="4:5">4:5</button><button data-v="16:9">16:9 na šírku</button></div>
+      <span class="lbl">Typ súboru</span>
+      <div class="seg" data-k="G.fmt"><button data-v="gif">GIF</button><button data-v="mp4">MP4 video v slučke</button></div>
+    </div>
+
+    <div class="box" id="gSrcBox">
+      <h3>Z čoho GIF vznikne</h3>
+      <div class="seg" data-k="G.src"><button data-v="video">Z videa</button><button data-v="images">Z fotiek</button><button data-v="draw">Kresba</button><button data-v="none">Len text</button></div>
+      <div id="gVideo" style="display:contents">
+        <div class="row"><button class="btn small" id="vidBtn">Vybrať video</button><span class="note grow" id="vidName">Vyber krátke video (MP4, MOV, WebM)</span><input type="file" id="vidIn" accept="video/*" hidden></div>
+        <div class="slider"><span>Začiatok</span><input type="range" min="0" max="10" step="0.1" data-k="G.start" id="gStart"><output data-o="G.start"></output></div>
+        <div class="slider"><span>Dĺžka</span><input type="range" min="0.5" max="10" step="0.1" data-k="G.len" id="gLen"><output data-o="G.len"></output></div>
+        <div class="slider"><span>Rýchlosť</span><input type="range" min="0.5" max="3" step="0.25" data-k="G.speed"><output data-o="G.speed"></output></div>
+      </div>
+      <div id="gImages" style="display:contents">
+        <div class="row"><button class="btn small" id="imgBtn">Pridať fotky</button><span class="note grow">Budú sa striedať v poradí, v akom ich pridáš</span><input type="file" id="imgIn" accept="image/*" multiple hidden></div>
+        <div class="strip" id="imgStrip"></div>
+        <div class="slider"><span>Čas na fotku</span><input type="range" min="0.2" max="3" step="0.1" data-k="G.per"><output data-o="G.per"></output></div>
+      </div>
+      <div id="gNone" style="display:contents">
+        <div class="row"><input type="color" data-k="G.bg" aria-label="Farba pozadia 1"><input type="color" data-k="G.bg2" aria-label="Farba pozadia 2"><span class="note">Farby pozadia (prechod)</span></div>
+        <div class="slider"><span>Dĺžka slučky</span><input type="range" min="1" max="6" step="0.5" data-k="G.dur"><output data-o="G.dur"></output></div>
+      </div>
+      <div id="gFrame" style="display:contents">
+        <div class="slider"><span>Priblíženie</span><input type="range" min="1" max="3" step="0.01" data-k="G.zoom"><output data-o="G.zoom"></output></div>
+        <div class="slider"><span>Posun ↔</span><input type="range" min="-1" max="1" step="0.01" data-k="G.panX"><output data-o="G.panX"></output></div>
+        <div class="slider"><span>Posun ↕</span><input type="range" min="-1" max="1" step="0.01" data-k="G.panY"><output data-o="G.panY"></output></div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>Text</h3>
+      <textarea rows="2" data-k="G.text.value" placeholder="napr. Čisté za 1 deň!"></textarea>
+      <div class="seg" data-k="G.text.pos"><button data-v="top">Hore</button><button data-v="center">Stred</button><button data-v="bottom">Dole</button></div>
+      <div class="slider"><span>Veľkosť</span><input type="range" min="4" max="26" step="0.5" data-k="G.text.size"><output data-o="G.text.size"></output></div>
+      <div class="row"><input type="color" data-k="G.text.color" aria-label="Farba textu"><span>Farba</span><label class="chk" style="margin-left:14px"><input type="checkbox" data-k="G.text.stroke">Tmavý obrys</label></div>
+      <span class="lbl">Animácia textu</span>
+      <div class="seg" data-k="G.text.anim"><button data-v="none">Žiadna</button><button data-v="blink">Blikanie</button><button data-v="bounce">Poskakovanie</button><button data-v="pulse">Pulz</button><button data-v="shake">Trasenie</button><button data-v="wave">Vlna</button><button data-v="type">Písanie</button><button data-v="slide">Prílet</button><button data-v="rainbow">Dúha</button></div>
+    </div>
+
+    <div class="box">
+      <h3>Logo</h3>
+      <div class="row"><button class="btn small" id="logoBtn">Nahrať logo</button><button class="btn small danger" id="logoDel" hidden>Odstrániť</button><input type="file" id="logoIn" accept="image/*" hidden></div>
+      <div class="seg" data-k="G.logo.pos"><button data-v="tl">↖</button><button data-v="tr">↗</button><button data-v="bl">↙</button><button data-v="br">↘</button></div>
+      <div class="slider"><span>Veľkosť</span><input type="range" min="8" max="50" step="1" data-k="G.logo.size"><output data-o="G.logo.size"></output></div>
+    </div>
+
+    <div class="box" id="gQual">
+      <h3>Kvalita GIF</h3>
+      <div class="slider"><span>Veľkosť</span><input type="range" min="200" max="800" step="20" data-k="G.size"><output data-o="G.size"></output></div>
+      <span class="lbl">Plynulosť</span>
+      <div class="seg" data-k="G.fps" data-num="1"><button data-v="8">8 sn./s<br><small>malý súbor</small></button><button data-v="12">12 sn./s</button><button data-v="15">15 sn./s</button><button data-v="20">20 sn./s<br><small>plynulé</small></button></div>
+      <p class="note">Ak GIF presiahne limit platformy, program ho sám zmenší.</p>
+    </div>
+  </div>
+
+  <!-- ================= EMOJI ================= -->
+  <div id="pEmoji" style="display:contents" hidden>
+    <div class="box">
+      <h3>Kam emoji dávaš</h3>
+      <div class="seg plat" data-k="E.plat">
+        <button data-v="whatsapp">WhatsApp</button><button data-v="instagram">Instagram</button><button data-v="facebook">Facebook</button><button data-v="tiktok">TikTok</button>
+        <button data-v="youtube">YouTube</button><button data-v="discord">Discord</button><button data-v="telegram">Telegram</button><button data-v="slack">Slack</button><button data-v="custom">Vlastné</button>
+      </div>
+      <p class="tip" id="eTip"></p>
+      <div class="slider" id="eSizeRow"><span>Veľkosť</span><input type="range" min="48" max="1024" step="8" data-k="E.size"><output data-o="E.size"></output></div>
+    </div>
+
+    <div class="box" id="eBaseBox">
+      <h3>Základ</h3>
+      <div class="seg" data-k="E.base"><button data-v="build">Poskladať z dielov</button><button data-v="draw">Nakresliť</button><button data-v="photo">Z fotky alebo loga</button></div>
+
+      <div id="eBuild" style="display:contents">
+        <span class="lbl">Tvar</span>
+        <div class="seg" data-k="E.shape"><button data-v="circle">Kruh</button><button data-v="square">Štvorec</button><button data-v="heart">Srdce</button><button data-v="star">Hviezda</button><button data-v="drop">Kvapka</button></div>
+        <span class="lbl">Farba</span>
+        <div class="row"><div class="sw" id="sw"></div><input type="color" data-k="E.color" aria-label="Vlastná farba"></div>
+        <span class="lbl">Oči</span>
+        <div class="seg" data-k="E.eyes"><button data-v="dot">Bodky</button><button data-v="big">Veľké</button><button data-v="happy">Usmiate</button><button data-v="wink">Žmurk</button><button data-v="hearts">Srdiečka</button><button data-v="stars">Hviezdy</button><button data-v="closed">Zavreté</button><button data-v="angry">Nahnevané</button><button data-v="cool">Okuliare</button></div>
+        <span class="lbl">Ústa</span>
+        <div class="seg" data-k="E.mouth"><button data-v="smile">Úsmev</button><button data-v="grin">Smiech</button><button data-v="open">Otvorené</button><button data-v="sad">Smutné</button><button data-v="neutral">Rovné</button><button data-v="tongue">Jazyk</button><button data-v="o">Ó</button><button data-v="smirk">Úškrn</button></div>
+        <span class="lbl">Doplnky (môžeš viac naraz)</span>
+        <div class="seg" id="extras"><button data-x="blush">Líčka</button><button data-x="tear">Slza</button><button data-x="sweat">Pot</button><button data-x="sparkles">Iskričky</button><button data-x="bubbles">Bublinky</button><button data-x="crown">Koruna</button><button data-x="halo">Svätožiara</button><button data-x="broom">Metla</button><button data-x="bucket">Kýbel</button></div>
+      </div>
+
+      <div id="ePhoto" style="display:contents">
+        <div class="row"><button class="btn small" id="phBtn">Vybrať fotku</button><span class="note grow" id="phName">JPG alebo PNG</span><input type="file" id="phIn" accept="image/*" hidden></div>
+        <span class="lbl">Odstránenie pozadia</span>
+        <div class="seg" data-k="E.tool"><button data-v="view">Náhľad</button><button data-v="wand">Klik na pozadie</button><button data-v="erase">Guma</button><button data-v="restore">Vrátiť</button></div>
+        <p class="note" id="toolNote"></p>
+        <div class="slider"><span>Citlivosť</span><input type="range" min="5" max="120" step="1" data-k="E.tol"><output data-o="E.tol"></output></div>
+        <div class="slider"><span>Hrúbka gumy</span><input type="range" min="1" max="15" step="0.5" data-k="E.brush"><output data-o="E.brush"></output></div>
+        <div class="row"><button class="btn small primary" id="aiBtn">Automaticky (AI)</button><button class="btn small" id="undoBtn">Krok späť</button><button class="btn small" id="resetBtn">Pôvodná fotka</button></div>
+        <p class="note" id="aiNote">Automatika funguje najlepšie na ľuďoch. Pri prvom použití si stiahne model (asi 25 MB). Na logá a jednofarebné pozadie použi „Klik na pozadie“.</p>
+        <div class="slider"><span>Biely okraj</span><input type="range" min="0" max="10" step="0.5" data-k="E.outline"><output data-o="E.outline"></output></div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>Umiestnenie a pozadie</h3>
+      <div class="slider"><span>Veľkosť</span><input type="range" min="40" max="140" step="1" data-k="E.scale"><output data-o="E.scale"></output></div>
+      <div class="slider"><span>Posun ↔</span><input type="range" min="-40" max="40" step="1" data-k="E.x"><output data-o="E.x"></output></div>
+      <div class="slider"><span>Posun ↕</span><input type="range" min="-40" max="40" step="1" data-k="E.y"><output data-o="E.y"></output></div>
+      <div class="row"><div class="seg grow" data-k="E.bg"><button data-v="none">Priehľadné</button><button data-v="circle">Farebný kruh</button><button data-v="square">Farebný štvorec</button></div><input type="color" data-k="E.bgColor" aria-label="Farba pozadia"></div>
+    </div>
+
+    <div class="box">
+      <h3>Animácia</h3>
+      <div class="seg" data-k="E.anim"><button data-v="none">Bez pohybu</button><button data-v="bounce">Poskakovanie</button><button data-v="pulse">Pulz</button><button data-v="shake">Trasenie</button><button data-v="wobble">Kývanie</button><button data-v="float">Vznášanie</button><button data-v="spin">Točenie</button></div>
+      <span class="lbl">Efekt okolo</span>
+      <div class="seg" data-k="E.fx"><button data-v="none">Žiadny</button><button data-v="hearts">Srdiečka</button><button data-v="sparkles">Iskrenie</button><button data-v="bubbles">Bublinky</button></div>
+      <label class="chk" id="blinkRow"><input type="checkbox" data-k="E.blink">Žmurkanie očí</label>
+      <div class="slider"><span>Dĺžka slučky</span><input type="range" min="0.6" max="3" step="0.1" data-k="E.dur"><output data-o="E.dur"></output></div>
+      <p class="note" id="animNote"></p>
+    </div>
+
+    <div class="box">
+      <h3>Text</h3>
+      <input data-k="E.text.value" placeholder="napr. TOP, ĎAKUJEM, WOW">
+      <div class="seg" data-k="E.text.pos"><button data-v="top">Hore</button><button data-v="center">Stred</button><button data-v="bottom">Dole</button></div>
+      <div class="slider"><span>Veľkosť</span><input type="range" min="8" max="36" step="0.5" data-k="E.text.size"><output data-o="E.text.size"></output></div>
+      <div class="row"><input type="color" data-k="E.text.color" aria-label="Farba textu"><span>Farba</span></div>
+      <div class="seg" data-k="E.text.anim"><button data-v="none">Bez animácie</button><button data-v="blink">Blikanie</button><button data-v="bounce">Poskakovanie</button><button data-v="pulse">Pulz</button><button data-v="wave">Vlna</button><button data-v="rainbow">Dúha</button></div>
+    </div>
+  </div>
+
+  <!-- ================= KRESBA ================= -->
+  <div class="box" id="pDraw" hidden>
+    <h3>Kresba</h3>
+    <div class="seg" data-k="D.kind"><button data-v="rig">Panáčik a obrázky</button><button data-v="frames">Voľné kreslenie</button><button data-v="photo">Z fotky kresby</button></div>
+    <div class="row" id="dPlayRow"><button class="btn small primary" id="dPlay">▶ Prehrať</button><span class="note grow" id="dHint"></span></div>
+
+    <div id="dRig" style="display:contents">
+      <span class="lbl">Šablóna</span>
+      <div class="seg" id="dCount"><button data-n="1">1 panáčik</button><button data-n="2">2 panáčikovia</button><button data-n="3">3 panáčikovia</button><button data-n="0">Bez panáčika</button></div>
+      <span class="lbl">Hotové postavičky (klikni a hneď sa hýbe)</span>
+      <div class="seg" id="dPresets"></div>
+      <p class="note">Najviac 3 postavičky naraz. Ďalšia nahradí vybranú.</p>
+      <span class="lbl">Paličkové obrázky (klikni a pridá sa do scény)</span>
+      <div class="seg" id="dObjs"></div>
+      <div class="row" id="dObjRow"><input type="color" id="dObjColor" aria-label="Farba obrázka"><span>Farba vybraného obrázka</span><button class="btn small danger" id="dObjDel">Odstrániť obrázok</button></div>
+      <label class="chk"><input type="checkbox" data-k="D.objAnim">Obrázky sa hýbu (auto ide, strom sa kýve, slnko sa točí)</label>
+      <span class="lbl">Hotový pohyb panáčika</span>
+      <div class="seg" id="dMoves"><button data-m="stand">Stojí</button><button data-m="dance">Tancuje</button><button data-m="wave">Máva</button><button data-m="kick">Kope</button><button data-m="jump">Skáče</button><button data-m="walk">Kráča</button><button data-m="sweep">Zametá</button></div>
+      <label class="chk"><input type="checkbox" data-k="D.all">Použiť pohyb na všetkých panáčikov</label>
+      <span class="lbl">Pózy (pohyb ide od jednej k druhej a dookola)</span>
+      <div class="row"><div class="seg grow" id="dKeys"></div><button class="btn small" id="dKeyAdd">+ Póza</button><button class="btn small danger" id="dKeyDel">Zmazať</button></div>
+      <div class="slider"><span>Dĺžka pohybu</span><input type="range" min="0.4" max="4" step="0.1" data-k="D.dur"><output data-o="D.dur"></output></div>
+      <div class="slider"><span>Veľkosť</span><input type="range" min="50" max="150" step="1" data-k="D.size"><output data-o="D.size"></output></div>
+      <span class="lbl">Tvár</span>
+      <div class="seg" data-k="D.face"><button data-v="smile">Úsmev</button><button data-v="grin">Smiech</button><button data-v="sad">Smutný</button><button data-v="wow">Prekvapený</button><button data-v="none">Bez tváre</button></div>
+      <div class="row"><input type="color" id="dFigColor" aria-label="Farba panáčika"><span>Farba vybraného panáčika</span><button class="btn small" id="dColorAll">Dať všetkým</button></div>
+    </div>
+
+    <div id="dFrames" style="display:contents">
+      <div class="row"><div class="seg grow" data-k="D.tool"><button data-v="pen">Pero</button><button data-v="erase">Guma</button></div><input type="color" data-k="D.color" aria-label="Farba pera"></div>
+      <span class="lbl">Obrázky animácie</span>
+      <div class="strip fr" id="dStrip"></div>
+      <div class="row"><button class="btn small" id="dFAdd">+ Nový</button><button class="btn small" id="dFDup">+ Kópia</button><button class="btn small" id="dFUndo">Krok späť</button><button class="btn small" id="dFClear">Vymazať</button><button class="btn small danger" id="dFDel">Zmazať</button></div>
+      <label class="chk"><input type="checkbox" data-k="D.onion">Vidieť predošlý obrázok (na obkreslenie)</label>
+      <div class="slider"><span>Rýchlosť</span><input type="range" min="1" max="12" step="1" data-k="D.fps"><output data-o="D.fps"></output></div>
+      <p class="note">Nakresli prvý obrázok, klikni na „+ Kópia“ a kúsok ho zmeň (napr. nohu). Z 3 až 8 obrázkov vznikne pohyb.</p>
+    </div>
+
+    <div id="dPhoto" style="display:contents">
+      <div class="row"><button class="btn small" id="dPhBtn">Vybrať fotku kresby</button><span class="note grow" id="dPhName">Kresba perom alebo fixkou na bielom papieri</span><input type="file" id="dPhIn" accept="image/*" hidden></div>
+      <div class="slider"><span>Citlivosť</span><input type="range" min="10" max="95" step="1" data-k="D.sens"><output data-o="D.sens"></output></div>
+      <div class="row"><label class="chk"><input type="checkbox" data-k="D.recolor">Prefarbiť čiary</label><input type="color" data-k="D.color" aria-label="Farba čiar"></div>
+      <button class="btn small" id="dPhTrace" style="align-self:flex-start">Upraviť a dokresliť ďalšie obrázky</button>
+      <p class="note">Program z fotky vytiahne len čiary, papier a tiene zmiznú. Kresba sa hýbe ako celok. Ak chceš rozhýbať nohu či ruku, klikni na tlačidlo vyššie a obkresli ďalšie obrázky.</p>
+    </div>
+
+    <div class="slider"><span>Hrúbka čiary</span><input type="range" min="0.6" max="6" step="0.1" data-k="D.width"><output data-o="D.width"></output></div>
+    <div id="dAnimRow" style="display:contents">
+      <span class="lbl">Pohyb celej kresby</span>
+      <div class="seg" data-k="D.anim"><button data-v="none">Žiadny</button><button data-v="bounce">Poskakovanie</button><button data-v="pulse">Pulz</button><button data-v="shake">Trasenie</button><button data-v="wobble">Kývanie</button><button data-v="float">Vznášanie</button><button data-v="spin">Točenie</button></div>
+    </div>
+  </div>
+
+  <!-- ================= EXPORT ================= -->
+  <div class="box">
+    <h3>Uloženie</h3>
+    <div class="row"><input id="name" class="grow" placeholder="Názov súboru" aria-label="Názov súboru"></div>
+    <button class="btn primary" id="exBtn" style="padding:12px">Uložiť</button>
+    <div class="bar" id="exBar" hidden><div></div></div>
+    <div class="result" id="result" hidden></div>
+    <p class="note">Súbor sa uloží do priečinka Stiahnuté súbory a zároveň do Knižnice v tomto programe.</p>
+  </div>
+</aside>
+</main>
+
+<section id="lib" hidden>
+  <h2>Knižnica</h2>
+  <p class="note">Všetko, čo si uložil. Je to len v tomto prehliadači na tomto počítači.</p>
+  <div class="grid" id="libGrid"></div>
+</section>
+<div id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.js"></script>
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const even = n => Math.max(2, Math.round(n/2)*2);
+const TAU = Math.PI*2, FONT = '"Archivo","Segoe UI",Arial,sans-serif', DARK = '#33261a';
+const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const sk = (n, d=1) => String(Math.round(n*10**d)/10**d).replace('.', ',');
+function fmtSize(b){ return b < 1024*1024 ? `${Math.max(1, Math.round(b/1024))} kB` : `${sk(b/1024/1024)} MB`; }
+let toastT;
+function toast(msg, err){ const t = $('#toast'); t.textContent = msg; t.classList.toggle('err', !!err); t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), err ? 6000 : 3000); }
+function download(blob, name){ const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000); }
+function mix(hex, to, a){ const p = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16)); const A = p(hex), B = p(to); return `rgb(${A.map((v,i) => Math.round(v + (B[i]-v)*a)).join(',')})`; }
+function loadImg(src){ return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+const readDataURL = f => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+
+/* ---------- platforms ---------- */
+const GP = {
+  facebook:  { name:'Facebook',  fmt:'gif', aspect:'1:1',  size:600, maxMB:8,  tip:'Facebook prijíma GIF v príspevku aj v komentári. Nahraj ho ako fotku alebo video.' },
+  instagram: { name:'Instagram', fmt:'mp4', aspect:'1:1',  minDur:3, tip:'Instagram súbory GIF neprijíma. Uloží sa preto krátke MP4 video v slučke (aspoň 3 s), ktoré nahráš ako príspevok alebo Reels.' },
+  tiktok:    { name:'TikTok',    fmt:'mp4', aspect:'9:16', minDur:3, tip:'TikTok súbory GIF neprijíma. Uloží sa MP4 video na výšku v slučke.' },
+  youtube:   { name:'YouTube',   fmt:'mp4', aspect:'9:16', minDur:3, tip:'YouTube súbory GIF neprijíma. Uloží sa MP4 video pre Shorts. Pre bežné video zvoľ pomer 16:9.' },
+  whatsapp:  { name:'WhatsApp',  fmt:'gif', aspect:'1:1',  size:480, maxMB:16, tip:'Vo WhatsApp pošli súbor z galérie. Zobrazí sa ako GIF, ktorý sa sám prehráva.' },
+  messenger: { name:'Messenger', fmt:'gif', aspect:'1:1',  size:480, maxMB:25, tip:'V Messengeri pošli GIF ako prílohu zo súborov alebo galérie.' },
+  discord:   { name:'Discord',   fmt:'gif', aspect:'1:1',  size:480, maxMB:10, tip:'Discord prijme súbor do 10 MB. Program GIF podľa toho zmenší.' },
+  custom:    { name:'Vlastné',   tip:'Nastav si pomer strán, typ súboru a veľkosť podľa seba.' }
+};
+const EP = {
+  whatsapp:  { name:'WhatsApp',  size:512, still:'webp', maxKB:100,  maxAnimKB:500, tip:'Vo WhatsApp otvor Nálepky, ťukni na Vytvoriť (+) a vyber uložený obrázok. Pohyblivé emoji pošli ako GIF z galérie.' },
+  instagram: { name:'Instagram', size:512, still:'png', tip:'V Stories pridaj nálepku Fotka a vyber uložený obrázok. Priehľadné pozadie zostane. Vlastné emoji do komentárov Instagram nepodporuje.' },
+  facebook:  { name:'Facebook',  size:512, still:'png', tip:'Na Facebooku a v Messengeri vlož obrázok alebo GIF do komentára či správy.' },
+  tiktok:    { name:'TikTok',    size:512, still:'png', tip:'V TikToku pridaj obrázok do videa ako nálepku pri úprave. Priehľadné pozadie zostane.' },
+  youtube:   { name:'YouTube',   size:480, still:'png', maxKB:1024, maxAnimKB:1024, tip:'YouTube: vlastné emoji pre členov kanála. Nahráš ich v YouTube Studiu pri členstvách (do 1 MB).' },
+  discord:   { name:'Discord',   size:128, still:'png', maxKB:256, maxAnimKB:256, tip:'Discord: Nastavenia servera, Emoji, Nahrať emoji. Limit je 256 kB.' },
+  telegram:  { name:'Telegram',  size:512, still:'png', maxKB:512, tip:'Telegram: pošli obrázok botovi @Stickers a vytvor si vlastný balík nálepiek.' },
+  slack:     { name:'Slack',     size:128, still:'png', maxKB:128, maxAnimKB:128, tip:'Slack: Pridať emoji, Nahrať obrázok. Limit je 128 kB.' },
+  custom:    { name:'Vlastné',   still:'png', tip:'Nastav si vlastnú veľkosť. Uloží sa PNG s priehľadným pozadím, pri animácii GIF.' }
+};
+
+/* ---------- state ---------- */
+const G = { plat:'facebook', aspect:'1:1', fmt:'gif', size:600, fps:12, src:'none', start:0, len:3, speed:1, per:0.6, dur:2, zoom:1, panX:0, panY:0,
+  bg:'#1d6fe0', bg2:'#0b2a6b',
+  text:{ value:'Čisté za 1 deň!', pos:'center', size:13, color:'#ffffff', stroke:true, anim:'bounce' },
+  logo:{ src:null, pos:'tr', size:22 } };
+const E = { plat:'whatsapp', size:512, base:'build', shape:'circle', color:'#ffd23f', eyes:'happy', mouth:'grin', extras:['sparkles'], blink:false,
+  tool:'view', tol:40, brush:5, outline:4,
+  scale:100, x:0, y:0, bg:'none', bgColor:'#1d6fe0', anim:'none', fx:'none', dur:1.2,
+  text:{ value:'', pos:'bottom', size:18, color:'#ffffff', stroke:true, anim:'none' } };
+const D = { kind:'rig', edit:true, color:'#1d4ed8', width:1.6, anim:'none', dur:1.6, size:100, face:'smile', all:true, K:4, key:0, sel:0, figs:[],
+  tool:'pen', onion:true, fps:5, cur:0, sens:75, recolor:false, objs:[], osel:-1, objAnim:true };
+let dFrames = [], dUndo = [], dPhotoImg = null, dPhotoSrc = null, dPhotoCv = null, dDrag = null, dLast = null;
+const R = { G, E, D };
+let view = 'gif', busy = false, t0 = performance.now();
+const video = document.createElement('video'); video.muted = true; video.playsInline = true; video.preload = 'auto';
+let vidFile = null, vidReady = false, gImgs = [], logoImg = null;
+let cut = null, cutVer = 0, undo = [], pointer = null;
+const cv = $('#cv'), ctx = cv.getContext('2d');
+
+/* ---------- drawing primitives ---------- */
+function heartPath(c, x, y, s){ c.beginPath(); c.moveTo(x, y + s*.45); c.bezierCurveTo(x - s*.7, y + s*.02, x - s*.45, y - s*.55, x, y - s*.18); c.bezierCurveTo(x + s*.45, y - s*.55, x + s*.7, y + s*.02, x, y + s*.45); c.closePath(); }
+function starPath(c, x, y, ro, ri, n = 5, rot = -Math.PI/2){ c.beginPath(); for(let i = 0; i < n*2; i++){ const r = i % 2 ? ri : ro, a = rot + i*Math.PI/n; c.lineTo(x + Math.cos(a)*r, y + Math.sin(a)*r); } c.closePath(); }
+function dropPath(c, x, y, r){ c.beginPath(); c.moveTo(x, y - r*1.5); c.bezierCurveTo(x + r*.3, y - r*.9, x + r, y - r*.5, x + r, y); c.arc(x, y, r, 0, Math.PI); c.bezierCurveTo(x - r, y - r*.5, x - r*.3, y - r*.9, x, y - r*1.5); c.closePath(); }
+function drawCover(c, src, sw, sh, W, H){
+  const sc = Math.max(W/sw, H/sh) * G.zoom, dw = sw*sc, dh = sh*sc, mx = Math.max(0, (dw - W)/2), my = Math.max(0, (dh - H)/2);
+  c.drawImage(src, (W - dw)/2 - G.panX*mx, (H - dh)/2 - G.panY*my, dw, dh);
+}
+function wrapLines(c, text, maxW){
+  const out = [];
+  for(const para of String(text).split('\n')){ let line = ''; for(const w of para.split(/\s+/)){ if(!w) continue; const tst = line ? line + ' ' + w : w; if(c.measureText(tst).width > maxW && line){ out.push(line); line = w; } else line = tst; } if(line) out.push(line); }
+  return out;
+}
+/* animated text; p = phase 0..1 of the loop */
+function drawText(c, W, H, T, p){
+  if(!T.value || !T.value.trim()) return;
+  const fs = W * T.size/100; c.font = `900 ${fs}px ${FONT}`; c.textBaseline = 'middle'; c.textAlign = 'left'; c.lineJoin = 'round';
+  const lines = wrapLines(c, T.value, W*0.9), lh = fs*1.18, bh = lh*lines.length;
+  const top = T.pos === 'top' ? H*0.07 : T.pos === 'bottom' ? H*0.93 - bh : (H - bh)/2;
+  const a = T.anim; let alpha = 1, gx = 0, gy = 0, sc = 1, rot = 0, shown = Infinity;
+  if(a === 'blink') alpha = (p*2 % 1) < 0.5 ? 1 : 0.12;
+  if(a === 'bounce') gy = -Math.abs(Math.sin(p*TAU)) * fs*0.45;
+  if(a === 'pulse') sc = 1 + 0.12*Math.sin(p*TAU*2);
+  if(a === 'shake'){ gx = Math.sin(p*TAU*8)*fs*0.07; rot = Math.sin(p*TAU*6)*0.04; }
+  if(a === 'slide'){ const k = Math.min(1, p/0.3), e = 1 - Math.pow(1 - k, 3); gx = -(1 - e)*W*1.1; }
+  if(a === 'type') shown = Math.ceil(T.value.replace(/\s/g, '').length * Math.min(1, p/0.7));
+  c.save(); c.globalAlpha = alpha; c.translate(W/2 + gx, top + bh/2 + gy); c.rotate(rot); c.scale(sc, sc); c.translate(-W/2, -(top + bh/2));
+  let n = 0, ci = 0;
+  lines.forEach((ln, li) => {
+    const chars = [...ln], ws = chars.map(ch => c.measureText(ch).width), tot = ws.reduce((s, v) => s + v, 0);
+    let x = (W - tot)/2; const y = top + lh*li + lh/2;
+    chars.forEach((ch, j) => {
+      if(ch !== ' '){ n++; if(n > shown){ x += ws[j]; ci++; return; } }
+      const dy = a === 'wave' ? Math.sin((p*2 - ci*0.09)*TAU)*fs*0.16 : 0;
+      if(T.stroke !== false){ c.lineWidth = fs*0.2; c.strokeStyle = 'rgba(0,0,0,.92)'; c.strokeText(ch, x, y + dy); }
+      c.fillStyle = a === 'rainbow' ? `hsl(${(p*360 + ci*28) % 360},95%,62%)` : T.color; c.fillText(ch, x, y + dy);
+      x += ws[j]; ci++;
+    });
+  });
+  c.restore();
+}
+
+/* ---------- GIF scene ---------- */
+function gifDims(scale = 1){
+  const [a, b] = G.aspect.split(':').map(Number);
+  if(G.fmt === 'mp4') return ({ '1:1':[1080,1080], '9:16':[1080,1920], '4:5':[1080,1350], '16:9':[1920,1080] })[G.aspect];
+  const L = G.size*scale; return a >= b ? [even(L), even(L*b/a)] : [even(L*a/b), even(L)];
+}
+function drawGif(c, W, H, t, dur){
+  const p = dur > 0 ? (t/dur) % 1 : 0;
+  if(G.src === 'video' && vidReady){ c.fillStyle = '#000'; c.fillRect(0,0,W,H); drawCover(c, video, video.videoWidth, video.videoHeight, W, H); }
+  else if(G.src === 'images' && gImgs.length){ c.fillStyle = '#000'; c.fillRect(0,0,W,H); const im = gImgs[Math.min(gImgs.length-1, Math.floor(t/G.per + 1e-6) % gImgs.length)].img; drawCover(c, im, im.naturalWidth, im.naturalHeight, W, H); }
+  else { const g = c.createLinearGradient(0,0,W,H); g.addColorStop(0, G.bg); g.addColorStop(1, G.bg2); c.fillStyle = g; c.fillRect(0,0,W,H); }
+  if(G.src === 'draw'){ const U = Math.min(W, H), m = motion(D.anim, p, U); c.save(); c.translate(W/2 + m.dx, H/2 + m.dy); c.rotate(m.rot); c.scale(m.sc, m.sc); drawDrawing(c, U, t, dur); c.restore(); }
+  if(logoImg){ const lw = W*G.logo.size/100, lh = lw*logoImg.naturalHeight/logoImg.naturalWidth, m = W*0.04; c.drawImage(logoImg, G.logo.pos.endsWith('l') ? m : W - m - lw, G.logo.pos.startsWith('t') ? m : H - m - lh, lw, lh); }
+  drawText(c, W, H, G.text, p);
+}
+
+/* ---------- emoji builder ---------- */
+const FACE = { circle:{ y:0, s:1 }, square:{ y:0, s:1 }, heart:{ y:-.1, s:.78 }, star:{ y:.06, s:.52 }, drop:{ y:.22, s:.74 } };
+function shapePath(c, sh, Rr){
+  if(sh === 'square'){ c.beginPath(); c.roundRect(-Rr*.92, -Rr*.92, Rr*1.84, Rr*1.84, Rr*.4); }
+  else if(sh === 'heart') heartPath(c, 0, Rr*.1, Rr*2.15);
+  else if(sh === 'star') starPath(c, 0, Rr*.05, Rr*1.02, Rr*.56);
+  else if(sh === 'drop') dropPath(c, 0, Rr*.3, Rr*.72);
+  else { c.beginPath(); c.arc(0, 0, Rr*.95, 0, TAU); }
+}
+function drawFace(c, Rr, p){
+  const col = E.color, f = FACE[E.shape] || FACE.circle, u = Rr*f.s, fy = Rr*f.y, X = E.extras;
+  c.lineJoin = 'round'; c.lineCap = 'round';
+  if(X.includes('halo')){ c.strokeStyle = '#ffe066'; c.lineWidth = Rr*.09; c.beginPath(); c.ellipse(0, -Rr*1.08, Rr*.5, Rr*.14, 0, 0, TAU); c.stroke(); c.strokeStyle = '#d9a400'; c.lineWidth = Rr*.02; c.stroke(); }
+  if(X.includes('broom')){
+    c.strokeStyle = '#8a5a2b'; c.lineWidth = Rr*.09; c.beginPath(); c.moveTo(Rr*1.0, -Rr*.85); c.lineTo(Rr*1.0, Rr*.4); c.stroke();
+    c.fillStyle = '#e8b04a'; c.strokeStyle = '#9c6b12'; c.lineWidth = Rr*.035; c.beginPath(); c.moveTo(Rr*.88, Rr*.4); c.lineTo(Rr*1.12, Rr*.4); c.lineTo(Rr*1.24, Rr*1.0); c.lineTo(Rr*.76, Rr*1.0); c.closePath(); c.fill(); c.stroke();
+    c.beginPath(); for(const k of [.9, 1.0, 1.1]){ c.moveTo(Rr*k, Rr*.55); c.lineTo(Rr*(k + (k - 1)*1.1), Rr*.96); } c.stroke();
+    c.fillStyle = '#d94f4f'; c.fillRect(Rr*.86, Rr*.38, Rr*.28, Rr*.1);
+  }
+  shapePath(c, E.shape, Rr);
+  const g = c.createRadialGradient(-Rr*.3, -Rr*.4, Rr*.1, 0, 0, Rr*1.25); g.addColorStop(0, mix(col, '#ffffff', .45)); g.addColorStop(.55, col); g.addColorStop(1, mix(col, '#000000', .28));
+  c.fillStyle = g; c.fill(); c.strokeStyle = mix(col, '#000000', .45); c.lineWidth = Rr*.06; c.stroke();
+  if(X.includes('blush')){ c.fillStyle = 'rgba(255,90,120,.45)'; for(const s of [-1, 1]){ c.beginPath(); c.ellipse(s*u*.52, fy + u*.14, u*.15, u*.09, 0, 0, TAU); c.fill(); } }
+  // eyes
+  const ex = u*.33, ey = fy - u*.14, blink = E.blink && p > .44 && p < .56, eyes = blink ? 'closed' : E.eyes;
+  c.strokeStyle = DARK; c.fillStyle = DARK; c.lineWidth = u*.065;
+  for(const s of [-1, 1]){
+    const x = s*ex;
+    if(eyes === 'dot' || (eyes === 'wink' && s < 0) || eyes === 'angry'){ c.beginPath(); c.ellipse(x, ey, u*.085, u*.12, 0, 0, TAU); c.fill(); }
+    else if(eyes === 'big'){ c.fillStyle = '#fff'; c.beginPath(); c.arc(x, ey, u*.17, 0, TAU); c.fill(); c.lineWidth = u*.035; c.stroke(); c.fillStyle = DARK; c.beginPath(); c.arc(x + u*.03, ey + u*.02, u*.09, 0, TAU); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(x, ey - u*.03, u*.035, 0, TAU); c.fill(); c.fillStyle = DARK; c.lineWidth = u*.065; }
+    else if(eyes === 'happy' || eyes === 'wink'){ c.beginPath(); c.arc(x, ey + u*.06, u*.13, Math.PI*1.12, Math.PI*1.88); c.stroke(); }
+    else if(eyes === 'closed'){ c.beginPath(); c.arc(x, ey - u*.05, u*.12, Math.PI*.15, Math.PI*.85); c.stroke(); }
+    else if(eyes === 'hearts'){ heartPath(c, x, ey, u*.36); c.fillStyle = '#e8294a'; c.fill(); c.fillStyle = DARK; }
+    else if(eyes === 'stars'){ starPath(c, x, ey, u*.19, u*.085); c.fillStyle = '#fff'; c.fill(); c.lineWidth = u*.035; c.stroke(); c.fillStyle = DARK; c.lineWidth = u*.065; }
+    else if(eyes === 'cool'){ c.beginPath(); c.roundRect(x - u*.2, ey - u*.11, u*.4, u*.24, u*.09); c.fill(); }
+    if(eyes === 'angry'){ c.beginPath(); c.moveTo(x + s*u*.19, ey - u*.32); c.lineTo(x - s*u*.12, ey - u*.18); c.stroke(); }
+  }
+  if(eyes === 'cool'){ c.lineWidth = u*.05; c.beginPath(); c.moveTo(-ex, ey - u*.05); c.lineTo(ex, ey - u*.05); c.moveTo(-ex - u*.2, ey - u*.05); c.lineTo(-u*.78, ey - u*.14); c.moveTo(ex + u*.2, ey - u*.05); c.lineTo(u*.78, ey - u*.14); c.stroke(); }
+  // mouth
+  const my = fy + u*.3, m = E.mouth; c.strokeStyle = DARK; c.fillStyle = DARK; c.lineWidth = u*.065;
+  if(m === 'smile' || m === 'tongue'){ c.beginPath(); c.arc(0, my - u*.16, u*.32, Math.PI*.17, Math.PI*.83); c.stroke(); }
+  if(m === 'tongue'){ c.fillStyle = '#ff6b8a'; c.beginPath(); c.roundRect(-u*.09, my + u*.1, u*.18, u*.2, u*.09); c.fill(); c.lineWidth = u*.03; c.stroke(); }
+  if(m === 'grin'){
+    c.save(); c.beginPath(); c.moveTo(-u*.36, my - u*.04); c.bezierCurveTo(-u*.3, my + u*.42, u*.3, my + u*.42, u*.36, my - u*.04); c.closePath(); c.fillStyle = '#5a1a1a'; c.fill(); c.clip();
+    c.fillStyle = '#fff'; c.fillRect(-u*.4, my - u*.06, u*.8, u*.11); c.fillStyle = '#ff6b8a'; c.beginPath(); c.ellipse(0, my + u*.32, u*.18, u*.12, 0, 0, TAU); c.fill(); c.restore();
+    c.beginPath(); c.moveTo(-u*.36, my - u*.04); c.bezierCurveTo(-u*.3, my + u*.42, u*.3, my + u*.42, u*.36, my - u*.04); c.closePath(); c.lineWidth = u*.05; c.stroke();
+  }
+  if(m === 'open'){ c.fillStyle = '#5a1a1a'; c.beginPath(); c.ellipse(0, my + u*.06, u*.13, u*.18, 0, 0, TAU); c.fill(); }
+  if(m === 'sad'){ c.beginPath(); c.arc(0, my + u*.36, u*.3, Math.PI*1.2, Math.PI*1.8); c.stroke(); }
+  if(m === 'neutral'){ c.beginPath(); c.moveTo(-u*.22, my + u*.06); c.lineTo(u*.22, my + u*.06); c.stroke(); }
+  if(m === 'o'){ c.beginPath(); c.arc(0, my + u*.06, u*.09, 0, TAU); c.stroke(); }
+  if(m === 'smirk'){ c.beginPath(); c.moveTo(-u*.2, my + u*.08); c.quadraticCurveTo(u*.1, my + u*.16, u*.28, my - u*.08); c.stroke(); }
+  // extras in front
+  if(X.includes('tear')){ dropPath(c, -ex - u*.02, ey + u*.36, u*.08); c.fillStyle = '#5ab8ff'; c.fill(); }
+  if(X.includes('sweat')){ dropPath(c, Rr*.72, -Rr*.5, Rr*.1); c.fillStyle = '#5ab8ff'; c.fill(); c.strokeStyle = '#2a7fd0'; c.lineWidth = Rr*.02; c.stroke(); }
+  if(X.includes('crown')){
+    c.fillStyle = '#ffcf33'; c.strokeStyle = '#b07d00'; c.lineWidth = Rr*.04; c.beginPath(); const cy = -Rr*.84;
+    c.moveTo(-Rr*.42, cy); c.lineTo(-Rr*.5, cy - Rr*.38); c.lineTo(-Rr*.22, cy - Rr*.18); c.lineTo(0, cy - Rr*.46); c.lineTo(Rr*.22, cy - Rr*.18); c.lineTo(Rr*.5, cy - Rr*.38); c.lineTo(Rr*.42, cy); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#e8294a'; c.beginPath(); c.arc(0, cy - Rr*.12, Rr*.05, 0, TAU); c.fill();
+  }
+  if(X.includes('bucket')){
+    const bx = -Rr*.98, by = Rr*.5;
+    c.strokeStyle = '#6b7686'; c.lineWidth = Rr*.035; c.beginPath(); c.arc(bx, by + Rr*.02, Rr*.25, Math.PI, 0); c.stroke();
+    c.fillStyle = '#3d8bff'; c.strokeStyle = '#1b4fa8'; c.lineWidth = Rr*.035; c.beginPath(); c.moveTo(bx - Rr*.27, by); c.lineTo(bx + Rr*.27, by); c.lineTo(bx + Rr*.2, by + Rr*.5); c.lineTo(bx - Rr*.2, by + Rr*.5); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#fff'; for(const [dx, r] of [[-.15,.09],[0,.12],[.15,.08]]){ c.beginPath(); c.arc(bx + Rr*dx, by - Rr*.02, Rr*r, 0, TAU); c.fill(); }
+  }
+  if(X.includes('sparkles')){ for(const [x, y, s] of [[.92,-.78,.2],[-.98,-.5,.14],[.7,-1.08,.1]]){ starPath(c, Rr*x, Rr*y, Rr*s, Rr*s*.3, 4); c.fillStyle = '#fff'; c.fill(); c.strokeStyle = '#f2b100'; c.lineWidth = Rr*.025; c.stroke(); } }
+  if(X.includes('bubbles')){ for(const [x, y, s] of [[-.95,-.82,.15],[1.02,-.2,.11],[-1.08,-.2,.08],[.82,-.95,.07]]){ c.beginPath(); c.arc(Rr*x, Rr*y, Rr*s, 0, TAU); c.fillStyle = 'rgba(140,210,255,.35)'; c.fill(); c.strokeStyle = '#8fd0ff'; c.lineWidth = Rr*.025; c.stroke(); c.fillStyle = '#fff'; c.beginPath(); c.arc(Rr*(x - s*.35), Rr*(y - s*.35), Rr*s*.22, 0, TAU); c.fill(); } }
+}
+
+/* ---------- emoji from photo ---------- */
+let stick = null, stickKey = '';
+function cutBBox(){
+  const w = cut.work.width, h = cut.work.height, d = cut.work.getContext('2d').getImageData(0,0,w,h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(d[(y*w + x)*4 + 3] > 12){ if(x < x0) x0 = x; if(x > x1) x1 = x; if(y < y0) y0 = y; if(y > y1) y1 = y; }
+  return x1 < 0 ? null : [x0, y0, x1 - x0 + 1, y1 - y0 + 1];
+}
+function getSticker(){
+  const key = cutVer + ':' + E.outline; if(key === stickKey) return stick;
+  stickKey = key; const bb = cutBBox(); if(!bb){ stick = null; return null; }
+  const [bx, by, bw, bh] = bb, r = Math.round(Math.max(bw, bh) * E.outline/100), c = document.createElement('canvas');
+  c.width = bw + r*2; c.height = bh + r*2; const x = c.getContext('2d');
+  if(r > 0){ for(let i = 0; i < 28; i++){ const a = i/28*TAU; x.drawImage(cut.work, bx, by, bw, bh, r + Math.cos(a)*r, r + Math.sin(a)*r, bw, bh); } x.globalCompositeOperation = 'source-in'; x.fillStyle = '#fff'; x.fillRect(0,0,c.width,c.height); x.globalCompositeOperation = 'source-over'; }
+  x.drawImage(cut.work, bx, by, bw, bh, r, r, bw, bh); stick = c; return c;
+}
+function editFit(W, H){ const iw = cut.work.width, ih = cut.work.height, s = Math.min(W/iw, H/ih); return { s, ox: (W - iw*s)/2, oy: (H - ih*s)/2 }; }
+function drawEdit(c, W, H){
+  c.clearRect(0,0,W,H); if(!cut) return;
+  const f = editFit(W, H); c.globalAlpha = .22; c.drawImage(cut.orig, f.ox, f.oy, cut.orig.width*f.s, cut.orig.height*f.s); c.globalAlpha = 1;
+  c.drawImage(cut.work, f.ox, f.oy, cut.work.width*f.s, cut.work.height*f.s);
+  if(pointer && E.tool !== 'wand'){ c.strokeStyle = '#fff'; c.lineWidth = 2; c.beginPath(); c.arc(pointer.x, pointer.y, W*E.brush/100, 0, TAU); c.stroke(); c.strokeStyle = '#000'; c.lineWidth = 1; c.stroke(); }
+}
+function pushUndo(){ undo.push(cut.work.getContext('2d').getImageData(0,0,cut.work.width,cut.work.height)); if(undo.length > 8) undo.shift(); }
+function wand(ix, iy){
+  const w = cut.work.width, h = cut.work.height, x = cut.work.getContext('2d'), im = x.getImageData(0,0,w,h), d = im.data;
+  ix = Math.floor(ix); iy = Math.floor(iy); if(ix < 0 || iy < 0 || ix >= w || iy >= h) return;
+  const s = (iy*w + ix)*4; if(d[s+3] === 0) return;
+  const r0 = d[s], g0 = d[s+1], b0 = d[s+2], tol2 = E.tol*E.tol*3, seen = new Uint8Array(w*h), st = [iy*w + ix]; seen[iy*w + ix] = 1;
+  while(st.length){
+    const q = st.pop(), o = q*4, dr = d[o] - r0, dg = d[o+1] - g0, db = d[o+2] - b0;
+    if(d[o+3] !== 0 && dr*dr + dg*dg + db*db > tol2) continue;
+    d[o+3] = 0; const qx = q % w, qy = (q - qx)/w;
+    if(qx > 0 && !seen[q-1]){ seen[q-1] = 1; st.push(q-1); } if(qx < w-1 && !seen[q+1]){ seen[q+1] = 1; st.push(q+1); }
+    if(qy > 0 && !seen[q-w]){ seen[q-w] = 1; st.push(q-w); } if(qy < h-1 && !seen[q+w]){ seen[q+w] = 1; st.push(q+w); }
+  }
+  x.putImageData(im, 0, 0); cutVer++;
+}
+function brushAt(ix, iy, rad){
+  const x = cut.work.getContext('2d'); x.save(); x.beginPath(); x.arc(ix, iy, rad, 0, TAU);
+  if(E.tool === 'erase'){ x.globalCompositeOperation = 'destination-out'; x.fill(); }
+  else { x.clip(); x.clearRect(ix - rad, iy - rad, rad*2, rad*2); x.drawImage(cut.orig, 0, 0); }
+  x.restore(); cutVer++;
+}
+function canvasPt(e){ const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * cv.width/r.width, y: (e.clientY - r.top) * cv.height/r.height }; }
+const editing = () => view === 'emoji' && E.base === 'photo' && E.tool !== 'view' && cut;
+let painting = false;
+cv.addEventListener('pointerdown', e => {
+  if(drawEditing()){ drawDown(e); return; }
+  if(!editing()) return; const pt = canvasPt(e), f = editFit(cv.width, cv.height), ix = (pt.x - f.ox)/f.s, iy = (pt.y - f.oy)/f.s;
+  pushUndo();
+  if(E.tool === 'wand') wand(ix, iy); else { painting = true; cv.setPointerCapture(e.pointerId); brushAt(ix, iy, cv.width*E.brush/100/f.s); }
+});
+cv.addEventListener('pointermove', e => {
+  if(drawEditing()){ drawMove(e); return; }
+  if(!editing()){ pointer = null; return; } pointer = canvasPt(e);
+  if(painting){ const f = editFit(cv.width, cv.height); brushAt((pointer.x - f.ox)/f.s, (pointer.y - f.oy)/f.s, cv.width*E.brush/100/f.s); }
+});
+cv.addEventListener('pointerup', () => { painting = false; drawUp(); });
+cv.addEventListener('pointerleave', () => { pointer = null; });
+async function setPhoto(src, name){
+  const img = await loadImg(src), k = Math.min(1, 1024/Math.max(img.naturalWidth, img.naturalHeight));
+  const mk = () => { const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth*k); c.height = Math.round(img.naturalHeight*k); c.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, c.width, c.height); return c; };
+  cut = { orig: mk(), work: mk() }; cutVer++; undo = []; if(name) $('#phName').textContent = name;
+}
+let bgModel = null, bgProc = null, TF = null;
+async function autoCut(){
+  if(!cut){ toast('Najprv vyber fotku.', true); return; }
+  const btn = $('#aiBtn'), note = $('#aiNote'); btn.disabled = true;
+  try {
+    note.textContent = 'Pripravujem automatické odstránenie pozadia…';
+    if(!TF){ TF = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2'); TF.env.allowLocalModels = false; try { await caches.open('ge-test'); } catch(e){ TF.env.useBrowserCache = false; } }
+    if(!bgModel){
+      const files = {};
+      bgModel = await TF.AutoModel.from_pretrained('Xenova/modnet', { dtype: 'fp32', progress_callback: p => { if(p.status === 'progress' && p.total){ files[p.file] = p; const L = Object.values(files).reduce((s,f) => s + f.loaded, 0), T = Object.values(files).reduce((s,f) => s + f.total, 0); note.textContent = `Sťahujem model… ${Math.round(L/T*100)} % (len prvýkrát)`; } } });
+      bgProc = await TF.AutoProcessor.from_pretrained('Xenova/modnet');
+    }
+    note.textContent = 'Hľadám postavu na fotke…'; await sleep(60);
+    const w = cut.orig.width, h = cut.orig.height, src = cut.orig.getContext('2d').getImageData(0,0,w,h);
+    const image = new TF.RawImage(new Uint8ClampedArray(src.data), w, h, 4);
+    const { pixel_values } = await bgProc(image), { output } = await bgModel({ input: pixel_values });
+    const mask = await TF.RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(w, h);
+    pushUndo(); const x = cut.work.getContext('2d'), im = x.getImageData(0,0,w,h);
+    for(let i = 0; i < w*h; i++) im.data[i*4+3] = Math.min(im.data[i*4+3], mask.data[i]);
+    x.putImageData(im, 0, 0); cutVer++;
+    note.textContent = 'Hotovo. Okraje dolaď gumou alebo nástrojom Vrátiť.';
+  } catch(err){ console.error(err); note.textContent = 'Automatika sa nepodarila (skontroluj internet). Použi „Klik na pozadie“ a gumu.'; toast('Automatické odstránenie pozadia zlyhalo.', true); }
+  finally { btn.disabled = false; }
+}
+
+/* ---------- drawing: stick figures, frame-by-frame, photo of a drawing ---------- */
+const drawActive = () => (view === 'emoji' && E.base === 'draw') || (view === 'gif' && G.src === 'draw');
+const drawEditing = () => drawActive() && D.edit && D.kind !== 'photo';
+function drawAnimDur(){ return D.kind === 'rig' ? D.dur : D.kind === 'frames' && dFrames.length > 1 ? dFrames.length/D.fps : 0; }
+function motion(kind, p, U){
+  const m = { dx:0, dy:0, rot:0, sc:1 };
+  if(kind === 'bounce') m.dy = -Math.abs(Math.sin(p*TAU))*U*.09 + U*.03;
+  if(kind === 'pulse') m.sc = 1 + .08*Math.sin(p*TAU);
+  if(kind === 'shake') m.rot = Math.sin(p*TAU*3)*.16;
+  if(kind === 'wobble'){ m.rot = Math.sin(p*TAU)*.2; m.dx = Math.sin(p*TAU)*U*.04; }
+  if(kind === 'float') m.dy = Math.sin(p*TAU)*U*.04;
+  if(kind === 'spin') m.rot = p*TAU;
+  return m;
+}
+/* --- rig --- */
+const BL = { torso:.32, arm:.62, head:.1, ua:.15, fa:.15, th:.2, sh:.2 };
+const BASE = { x:0, y:0, t:0, h:0, la:-1.4, lf:-1.4, ra:1.4, rf:1.4, lt:-.55, ls:-.55, rt:.55, rs:.55 };
+const mk = o => ({ ...BASE, ...o });
+const mirror = q => ({ ...q, t:-q.t, h:-q.h, la:-q.ra, lf:-q.rf, ra:-q.la, rf:-q.lf, lt:-q.rt, ls:-q.rs, rt:-q.lt, rs:-q.ls });
+const MOVES = {
+  stand: () => [mk({}), mk({}), mk({}), mk({})],
+  dance: () => { const A = mk({ t:.14, h:.1, la:-2.5, lf:-3.0, ra:.9, rf:.2, lt:-.25, ls:-.25, rt:.85, rs:.2 }), N = mk({ y:.02, la:-.9, lf:-1.7, ra:.9, rf:1.7, lt:-.42, ls:-.1, rt:.42, rs:.1 }); return [A, N, mirror(A), N]; },
+  wave:  () => { const a = mk({ la:-.35, lf:-.25, ra:2.3, rf:2.9, h:.08 }), b = mk({ la:-.35, lf:-.25, ra:2.3, rf:1.9, h:-.05 }); return [a, b, a, b]; },
+  kick:  () => { const st = mk({ la:-1.0, lf:-1.5, ra:1.0, rf:1.5 }), k = mk({ t:-.16, la:-1.7, lf:-1.9, ra:1.2, rf:.6, rt:1.45, rs:1.5, lt:-.15, ls:-.15 }); return [st, k, st, mirror(k)]; },
+  jump:  () => { const c = mk({ y:.045, la:-.5, lf:-.2, ra:.5, rf:.2, lt:-.8, ls:.15, rt:.8, rs:-.15 }), u = mk({ y:-.1, la:-2.6, lf:-2.8, ra:2.6, rf:2.8, lt:-.3, ls:-.3, rt:.3, rs:.3 }); return [c, u, c, u]; },
+  walk:  () => { const a = mk({ la:.6, lf:1.0, ra:-.6, rf:-.2, lt:-.55, ls:-.95, rt:.5, rs:.25 }), n = mk({ y:-.012, la:-.1, lf:.1, ra:.1, rf:.3, lt:-.05, ls:-.1, rt:.08, rs:.05 }), b = mk({ la:-.6, lf:-.2, ra:.6, rf:1.0, lt:.5, ls:.25, rt:-.55, rs:-.95 }); return [a, n, b, n]; },
+  sweep: () => { const L = { lt:-.3, ls:-.3, rt:.3, rs:.3 }, a = mk({ ...L, t:.08, h:.05, la:.35, lf:.55, ra:.15, rf:.35 }), n = mk({ ...L, la:.1, lf:.1, ra:-.1, rf:-.1 }), b = mk({ ...L, t:-.08, h:-.05, la:-.15, lf:-.35, ra:-.35, rf:-.55 }); return [a, n, b, n]; }
+};
+/* --- ready-made characters: colour, accessories and a default move --- */
+const PRESETS = {
+  cleaner: { name:'Upratovač',     color:'#1d4ed8', move:'sweep', acc:{ hat:'cap', hold:'broom' } },
+  maid:    { name:'Upratovačka',   color:'#0891b2', move:'sweep', acc:{ hair:'long', skirt:true, hold:'mop' } },
+  girl:    { name:'Dievča',        color:'#e11d48', move:'dance', acc:{ hair:'long', skirt:true } },
+  chef:    { name:'Kuchár',        color:'#0d9488', move:'wave',  acc:{ hat:'chef' } },
+  king:    { name:'Kráľ',          color:'#7c3aed', move:'wave',  acc:{ hat:'crown' } },
+  fan:     { name:'Fanúšik',       color:'#16a34a', move:'jump',  acc:{ hat:'cap', hold:'flag' } },
+  player:  { name:'Futbalista',    color:'#ea580c', move:'kick',  acc:{ ball:true } },
+  lover:   { name:'Zamilovaný',    color:'#db2777', move:'wave',  acc:{ hold:'heart' } },
+  gent:    { name:'Pán v klobúku', color:'#b45309', move:'walk',  acc:{ hat:'top' } }
+};
+function addPreset(id){
+  const pr = PRESETS[id]; if(!pr) return;
+  let fi = D.sel; const cur = D.figs[fi];
+  if(!D.figs.length || (cur && cur.acc && D.figs.length < 3)){ setCount(D.figs.length + 1); fi = D.figs.length - 1; }
+  const f = D.figs[fi]; f.color = pr.color; f.acc = { ...pr.acc };
+  D.figs.forEach(o => { if(o.keys.length !== 4) o.keys = [0,1,2,3].map(k => clonePose(o.keys[k % o.keys.length])); });
+  f.keys = rot(MOVES[pr.move](), 0); D.K = 4; D.key = 0; D.sel = fi; D.edit = false; t0 = performance.now();
+}
+function drawHeld(c, kind, at, ang, S, col, lw){
+  c.save(); c.translate(at[0], at[1]); c.rotate(-ang); c.lineWidth = lw; c.lineCap = 'round'; c.lineJoin = 'round';
+  const ln = (x0, y0, x1, y1) => { c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); };
+  if(kind === 'broom'){
+    c.strokeStyle = '#8a5a2b'; ln(0, -S*.12, 0, S*.3);
+    c.beginPath(); c.moveTo(-S*.04, S*.3); c.lineTo(S*.04, S*.3); c.lineTo(S*.1, S*.43); c.lineTo(-S*.1, S*.43); c.closePath(); c.fillStyle = '#e8b04a'; c.fill(); c.strokeStyle = '#9c6b12'; c.lineWidth = lw*.8; c.stroke();
+    for(const k of [-.5, 0, .5]) ln(S*.04*k, S*.33, S*.09*k, S*.42);
+  } else if(kind === 'mop'){
+    c.strokeStyle = '#8a5a2b'; ln(0, -S*.12, 0, S*.32);
+    c.strokeStyle = '#94a3b8'; ln(-S*.1, S*.33, S*.1, S*.33); c.lineWidth = lw*.8; for(let k = -2; k <= 2; k++) ln(S*.045*k, S*.33, S*.05*k, S*.43);
+  } else if(kind === 'flag'){
+    c.strokeStyle = '#6b4f2a'; ln(0, -S*.06, 0, S*.4);
+    c.beginPath(); c.moveTo(0, S*.4); c.lineTo(S*.2, S*.36); c.lineTo(0, S*.25); c.closePath(); c.fillStyle = '#ef4444'; c.fill(); c.strokeStyle = '#991b1b'; c.lineWidth = lw*.7; c.stroke();
+  } else if(kind === 'heart'){
+    heartPath(c, 0, S*.08, S*.2); c.fillStyle = '#ff3b6b'; c.fill(); c.strokeStyle = '#9f1239'; c.lineWidth = lw*.7; c.stroke();
+  }
+  c.restore();
+}
+function drawHat(c, kind, hr, col, lw){
+  c.save(); c.lineWidth = lw; c.strokeStyle = col; c.lineJoin = 'round';
+  if(kind === 'cap'){
+    c.beginPath(); c.ellipse(0, -hr*.45, hr*1.22, hr*.75, 0, Math.PI, 0); c.closePath(); c.fillStyle = col; c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(hr*.3, -hr*.45); c.lineTo(hr*2.0, -hr*.35); c.stroke();
+  } else if(kind === 'chef'){
+    c.fillStyle = '#fff';
+    for(const [x, y, r] of [[-.55,-1.75,.45],[0,-1.95,.55],[.55,-1.75,.45]]){ c.beginPath(); c.arc(hr*x, hr*y, hr*r, 0, TAU); c.fill(); c.stroke(); }
+    c.beginPath(); c.rect(-hr*.8, -hr*1.6, hr*1.6, hr*.65); c.fill(); c.stroke();
+  } else if(kind === 'crown'){
+    c.beginPath(); [[-.8,-.85],[-.9,-1.6],[-.4,-1.2],[0,-1.75],[.4,-1.2],[.9,-1.6],[.8,-.85]].forEach(([x, y], i) => i ? c.lineTo(hr*x, hr*y) : c.moveTo(hr*x, hr*y)); c.closePath();
+    c.fillStyle = '#ffcf33'; c.fill(); c.strokeStyle = '#b07d00'; c.stroke();
+  } else if(kind === 'top'){
+    c.beginPath(); c.rect(-hr*.7, -hr*2.1, hr*1.4, hr*1.2); c.fillStyle = '#1f2937'; c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(-hr*1.4, -hr*.9); c.lineTo(hr*1.4, -hr*.9); c.stroke();
+  }
+  c.restore();
+}
+const LAYOUT = { 1:[0], 2:[-.2,.2], 3:[-.3,0,.3] }, FSCALE = { 1:.74, 2:.6, 3:.48 }, FIGCOL = ['#1d4ed8','#e11d48','#16a34a'];
+const clonePose = q => ({ ...q }), rot = (a, n) => a.map((_, i) => clonePose(a[(i + n) % a.length]));
+const figS = U => U * FSCALE[D.figs.length || 1] * D.size/100;
+function setCount(n){
+  while(D.figs.length > n) D.figs.pop();
+  while(D.figs.length < n){ const src = D.figs[0], i = D.figs.length; D.figs.push({ x:0, color: FIGCOL[i % 3], keys: src ? rot(src.keys, i) : rot(MOVES.dance(), 0) }); }
+  D.figs.forEach((f, i) => { f.x = LAYOUT[n][i]; f.keys.forEach(k => k.x = 0); });
+  D.sel = Math.max(0, Math.min(D.sel, n - 1)); if(D.figs[0]) D.K = D.figs[0].keys.length; D.key = Math.min(D.key, D.K - 1);
+}
+function applyMove(m){
+  const keys = MOVES[m]();
+  D.figs.forEach((f, i) => {
+    if(D.all || i === D.sel) f.keys = rot(keys, D.all ? i : 0);
+    else if(f.keys.length !== 4) f.keys = [0,1,2,3].map(k => clonePose(f.keys[k % f.keys.length]));
+  });
+  D.K = 4; D.key = 0;
+}
+function joints(P, f, U, S){
+  const hip = [(f.x + P.x)*U, P.y*U + S*.08], up = (o, a, L) => [o[0] + Math.sin(a)*S*L, o[1] - Math.cos(a)*S*L], dn = (o, a, L) => [o[0] + Math.sin(a)*S*L, o[1] + Math.cos(a)*S*L];
+  const neck = up(hip, P.t, BL.torso), sh = up(hip, P.t, BL.torso*BL.arm), head = up(neck, P.t + P.h, BL.head);
+  const le = dn(sh, P.la, BL.ua), lh = dn(le, P.lf, BL.fa), re = dn(sh, P.ra, BL.ua), rh = dn(re, P.rf, BL.fa);
+  const lk = dn(hip, P.lt, BL.th), lft = dn(lk, P.ls, BL.sh), rk = dn(hip, P.rt, BL.th), rft = dn(rk, P.rs, BL.sh);
+  return { hip, neck, sh, head, le, lh, re, rh, lk, lft, rk, rft };
+}
+const HANDLES = ['lh','rh','lft','rft','le','re','lk','rk','head','neck','hip'];
+const HMAP = { le:['sh','la'], lh:['le','lf'], re:['sh','ra'], rh:['re','rf'], lk:['hip','lt'], lft:['lk','ls'], rk:['hip','rt'], rft:['rk','rs'] };
+function lerpPose(A, B, e){ const o = {}; for(const k in A){ let d = B[k] - A[k]; if(k !== 'x' && k !== 'y'){ while(d > Math.PI) d -= TAU; while(d < -Math.PI) d += TAU; } o[k] = A[k] + d*e; } return o; }
+function drawFig(c, f, P, U, alpha = 1){
+  const S = figS(U), J = joints(P, f, U, S), hr = S*BL.head, lw = Math.max(1.2, U*D.width/100);
+  c.save(); c.globalAlpha *= alpha; c.strokeStyle = f.color; c.lineWidth = lw; c.lineCap = 'round'; c.lineJoin = 'round';
+  const L = (...pts) => { c.moveTo(pts[0][0], pts[0][1]); for(let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); };
+  const A = f.acc || {};
+  if(A.skirt){ const [hx, hy] = J.hip; c.beginPath(); c.moveTo(hx - S*.05, hy - S*.04); c.lineTo(hx + S*.05, hy - S*.04); c.lineTo(hx + S*.15, hy + S*.13); c.lineTo(hx - S*.15, hy + S*.13); c.closePath(); c.save(); c.globalAlpha *= .45; c.fillStyle = f.color; c.fill(); c.restore(); c.stroke(); }
+  if(A.ball){ const r = S*.065, bx = J.hip[0] + S*.3, by = J.hip[1] + S*.4 - r; c.save(); c.beginPath(); c.arc(bx, by, r, 0, TAU); c.fillStyle = '#fff'; c.fill(); c.lineWidth = lw*.8; c.strokeStyle = '#1b1e25'; c.stroke(); starPath(c, bx, by, r*.45, r*.3, 5); c.fillStyle = '#1b1e25'; c.fill(); c.restore(); }
+  c.beginPath(); L(J.hip, J.neck); L(J.lh, J.le, J.sh, J.re, J.rh); L(J.lft, J.lk, J.hip, J.rk, J.rft); c.stroke();
+  if(A.hold) drawHeld(c, A.hold, J.rh, P.rf, S, f.color, lw);
+  c.translate(J.head[0], J.head[1]); c.rotate(P.t + P.h);
+  if(A.hair === 'long'){ c.save(); c.strokeStyle = '#7c4a1e'; c.lineWidth = lw*1.5; c.beginPath(); c.moveTo(-hr*1.05, -hr*.45); c.quadraticCurveTo(-hr*1.6, hr*.6, -hr*1.3, hr*1.9); c.moveTo(hr*1.05, -hr*.45); c.quadraticCurveTo(hr*1.6, hr*.6, hr*1.3, hr*1.9); c.moveTo(-hr*1.15, -hr*.3); c.quadraticCurveTo(0, -hr*1.6, hr*1.15, -hr*.3); c.stroke(); c.restore(); }
+  c.beginPath(); c.ellipse(0, 0, hr*1.2, hr, 0, 0, TAU); c.stroke();
+  if(A.hat) drawHat(c, A.hat, hr, f.color, lw);
+  if(D.face !== 'none'){
+    c.lineWidth = Math.max(1, lw*.7);
+    for(const sgn of [-1, 1]){ c.beginPath(); c.ellipse(sgn*hr*.45, -hr*.18, hr*.1, hr*(D.face === 'wow' ? .24 : .17), 0, 0, TAU); c.stroke(); }
+    c.beginPath();
+    if(D.face === 'smile') c.arc(0, -hr*.15, hr*.62, Math.PI*.25, Math.PI*.75);
+    if(D.face === 'grin'){ c.moveTo(-hr*.5, hr*.22); c.quadraticCurveTo(0, hr*.95, hr*.5, hr*.22); c.closePath(); }
+    if(D.face === 'sad') c.arc(0, hr*.95, hr*.5, Math.PI*1.25, Math.PI*1.75);
+    if(D.face === 'wow') c.ellipse(0, hr*.45, hr*.16, hr*.2, 0, 0, TAU);
+    c.stroke();
+  }
+  c.restore();
+}
+/* --- stick-style template pictures; each is drawn in a box from -0.5 to 0.5, a = animation phase --- */
+const OBJS = {
+  car: ['Auto', h => { const { c, P, PC, wheel, road, a } = h; road(); c.translate(0, Math.sin(a*TAU*4)*.008); PC(-.45,.15,-.45,-.02,-.27,-.02,-.16,-.2,.14,-.2,.27,-.02,.45,-.02,.45,.15); P(-.02,-.2,-.02,-.02); wheel(-.25,.17,.09); wheel(.25,.17,.09); }],
+  house: ['Dom', h => { const { c, P, PC, O, a } = h; PC(-.35,.42,-.35,-.05,.35,-.05,.35,.42); PC(-.43,-.05,0,-.42,.43,-.05); PC(-.08,.42,-.08,.16,.08,.16,.08,.42); PC(.14,.04,.28,.04,.28,.18,.14,.18); P(.21,.04,.21,.18); P(.14,.11,.28,.11); P(.2,-.25,.2,-.4,.3,-.4,.3,-.16);
+    for(let k = 0; k < 3; k++){ const ph = (a + k/3) % 1; c.globalAlpha = 1 - ph*.8; O(.25 + Math.sin(ph*TAU)*.03, -.46 - ph*.16, .025 + ph*.04); } c.globalAlpha = 1; }],
+  tree: ['Strom', h => { const { P, O, sway } = h; sway(.05); P(0,.45,0,.02); P(0,.22,-.12,.08); P(0,.28,.12,.14); O(0,-.18,.28); O(-.1,-.22,.02); O(.12,-.1,.02); }],
+  flower: ['Kvietok', h => { const { c, P, O, sway } = h; sway(.09); P(0,.45,0,-.06); c.beginPath(); c.ellipse(-.1,.2,.1,.04,.5,0,TAU); c.stroke(); c.beginPath(); c.ellipse(.1,.28,.1,.04,-.5,0,TAU); c.stroke();
+    for(let k = 0; k < 6; k++) O(Math.cos(k*TAU/6)*.14, -.2 + Math.sin(k*TAU/6)*.14, .075); O(0,-.2,.065); }],
+  sun: ['Slnko', h => { const { c, P, O, a } = h; O(0,0,.2); c.beginPath(); c.arc(0,.01,.1,Math.PI*.2,Math.PI*.8); c.stroke(); O(-.07,-.05,.012); O(.07,-.05,.012); c.rotate(a*TAU/8); for(let k = 0; k < 8; k++){ const q = k*TAU/8; P(Math.cos(q)*.27, Math.sin(q)*.27, Math.cos(q)*.42, Math.sin(q)*.42); } }],
+  cloud: ['Oblak', h => { const { c, a } = h; c.translate(Math.sin(a*TAU)*.06, 0); c.beginPath(); c.arc(-.22,.06,.14,Math.PI*.5,Math.PI*1.5); c.arc(-.06,-.08,.17,Math.PI*1.05,Math.PI*1.9); c.arc(.2,.02,.18,Math.PI*1.45,Math.PI*.5); c.closePath(); c.stroke(); }],
+  dog: ['Pes', h => { const { P, O, a } = h; P(-.2,0,.2,0); O(.3,-.12,.1); P(.25,-.2,.19,-.3,.3,-.22); P(.39,-.08,.47,-.06); O(.33,-.14,.01); P(-.2,0,-.25,.32); P(-.17,0,-.12,.32); P(.16,0,.11,.32); P(.2,0,.25,.32); const t = -2.3 + Math.sin(a*TAU*3)*.45; P(-.2,0,-.2 + Math.cos(t)*.2, Math.sin(t)*.2); }],
+  cat: ['Mačka', h => { const { c, P, O, a } = h; P(-.2,.05,.18,.05); O(.26,-.1,.1); P(.18,-.16,.19,-.28,.25,-.2); P(.28,-.2,.34,-.28,.34,-.16); O(.23,-.12,.01); O(.3,-.12,.01); P(.3,-.07,.45,-.1); P(.3,-.05,.45,-.02); P(-.2,.05,-.23,.34); P(-.16,.05,-.13,.34); P(.14,.05,.11,.34); P(.18,.05,.21,.34);
+    const sw = Math.sin(a*TAU*2)*.1; c.beginPath(); c.moveTo(-.2,.05); c.quadraticCurveTo(-.42,.0,-.36 + sw,-.3); c.stroke(); }],
+  heart: ['Srdce', h => { const { c, a } = h; const k = 1 + Math.sin(a*TAU*2)*.07; c.scale(k, k); heartPath(c, 0, 0, .85); c.stroke(); }],
+  star: ['Hviezda', h => { const { c, a } = h; c.rotate(Math.sin(a*TAU)*.25); starPath(c, 0, 0, .42, .18); c.stroke(); }],
+  ball: ['Lopta', h => { const { c, P, O, a } = h; P(-.3,.45,.3,.45); c.translate(0, .2 - Math.abs(Math.sin(a*TAU))*.45); c.rotate(a*TAU); O(0,0,.22); c.beginPath(); c.arc(-.3,0,.3,-.75,.75); c.stroke(); c.beginPath(); c.arc(.3,0,.3,Math.PI-.75,Math.PI+.75); c.stroke(); }],
+  bike: ['Bicykel', h => { const { P, wheel, road } = h; road(.42); wheel(-.27,.2,.18); wheel(.27,.2,.18); P(-.27,.2,-.02,.2,-.1,-.12,-.27,.2); P(-.1,-.12,.17,-.12,-.02,.2); P(.27,.2,.17,-.12,.15,-.24,.25,-.26); P(-.1,-.12,-.1,-.18); P(-.17,-.18,-.03,-.18); }],
+  scooter: ['Kolobežka', h => { const { P, wheel, road } = h; road(.42); wheel(-.28,.3,.08); wheel(.28,.3,.08); P(-.28,.3,-.2,.24,.17,.24,.25,.12); P(.28,.3,.2,-.32); P(.11,-.32,.29,-.32); }],
+  moto: ['Motorka', h => { const { c, P, O, wheel, road, a } = h; road(.4); c.translate(0, Math.sin(a*TAU*4)*.006); wheel(-.28,.2,.15); wheel(.3,.2,.15); P(-.28,.2,-.12,.0,.12,.0,.02,.2,-.28,.2); P(-.3,-.04,-.02,-.04); P(.3,.2,.15,-.2); P(.08,-.23,.22,-.25); O(.2,-.12,.035); O(-.02,.1,.06); P(-.06,.2,-.4,.13); }],
+  bed: ['Posteľ', h => { const { c, P, PC, a } = h; P(-.44,.32,-.44,-.22); P(.44,.32,.44,-.02); PC(-.44,.05,.44,.05,.44,.18,-.44,.18); c.beginPath(); c.ellipse(-.28,-.01,.11,.055,0,0,TAU); c.stroke(); P(-.1,.05,-.1,.18);
+    for(let k = 0; k < 3; k++){ const ph = (a + k/3) % 1, x = -.2 + ph*.22, y = -.14 - ph*.3, z = .04 + ph*.05; c.globalAlpha = 1 - ph*.8; P(x,y,x+z,y,x,y+z,x+z,y+z); } c.globalAlpha = 1; }],
+  parasol: ['Slnečník', h => { const { c, P, sway } = h; sway(.035); P(0,.45,0,-.48); c.beginPath(); c.moveTo(-.42,-.1); c.arc(0,-.1,.42,Math.PI,0); for(let k = 3; k >= 0; k--) c.arc(-.315 + k*.21, -.1, .105, 0, Math.PI, true); c.closePath(); c.stroke(); P(0,-.52,-.21,-.2); P(0,-.52,.21,-.2); P(-.18,.45,.18,.45); }],
+  broom: ['Metla', h => { const { c, P, PC, a } = h; c.translate(0,-.45); c.rotate(.25 + Math.sin(a*TAU*2)*.18); c.translate(0,.45); P(0,-.45,0,.15); PC(-.09,.15,.09,.15,.18,.45,-.18,.45); P(-.05,.22,-.09,.42); P(.0,.22,0,.42); P(.05,.22,.09,.42); }],
+  bucket: ['Kýbel', h => { const { c, P, PC, O, a } = h; PC(-.26,-.08,.26,-.08,.19,.42,-.19,.42); c.beginPath(); c.arc(0,-.08,.26,Math.PI,0); c.stroke(); P(-.23,.06,.23,.06);
+    for(let k = 0; k < 3; k++){ const ph = (a + k/3) % 1; c.globalAlpha = 1 - ph; O(-.12 + k*.12, -.12 - ph*.3, .03 + .02*k); } c.globalAlpha = 1; }],
+  vacuum: ['Vysávač', h => { const { c, P, O, a } = h; c.beginPath(); c.ellipse(-.2,.26,.2,.13,0,0,TAU); c.stroke(); O(-.32,.4,.05); O(-.08,.4,.05); const dx = Math.sin(a*TAU*2)*.06; c.beginPath(); c.moveTo(-.05,.18); c.quadraticCurveTo(-.05,-.35,.12 + dx*.4,-.3); c.stroke(); P(.12 + dx*.4,-.3,.34 + dx,.4); P(.24 + dx,.42,.46 + dx,.42); }],
+  window: ['Okno', h => { const { c, P, PC, a } = h; PC(-.3,-.4,.3,-.4,.3,.36,-.3,.36); P(0,-.4,0,.36); P(-.3,-.02,.3,-.02); P(-.37,.36,.37,.36); P(-.37,.36,-.37,.42,.37,.42,.37,.36);
+    const k = .5 + .5*Math.sin(a*TAU*2); starPath(c, .15, -.22, .09*k + .02, .03*k + .006, 4); c.stroke(); starPath(c, -.16, .16, .06*(1-k) + .015, .02*(1-k) + .005, 4); c.stroke(); }]
+};
+function drawObj(c, o, U, p){
+  const def = OBJS[o.type]; if(!def) return;
+  const sz = o.s*U, a = D.objAnim ? p : 0;
+  c.save(); c.translate(o.x*U, o.y*U); c.scale(sz, sz); c.strokeStyle = o.color; c.lineWidth = Math.max(1.2, U*D.width/100)/sz; c.lineCap = 'round'; c.lineJoin = 'round';
+  const P = (...q) => { c.beginPath(); c.moveTo(q[0], q[1]); for(let i = 2; i < q.length; i += 2) c.lineTo(q[i], q[i+1]); c.stroke(); };
+  const PC = (...q) => { c.beginPath(); c.moveTo(q[0], q[1]); for(let i = 2; i < q.length; i += 2) c.lineTo(q[i], q[i+1]); c.closePath(); c.stroke(); };
+  const O = (x, y, r) => { c.beginPath(); c.arc(x, y, r, 0, TAU); c.stroke(); };
+  const wheel = (x, y, r) => { O(x, y, r); for(let k = 0; k < 3; k++){ const q = a*TAU*2 + k*TAU/3; P(x, y, x + Math.cos(q)*r, y + Math.sin(q)*r); } };
+  const road = (y = .3) => { for(let k = 0; k < 3; k++){ const x = (((k/3 - a*2) % 1) + 1) % 1 - .5; P(x, y, Math.min(.5, x + .13), y); } };
+  const sway = amt => { c.translate(0, .45); c.rotate(Math.sin(a*TAU)*amt); c.translate(0, -.45); };
+  def[1]({ c, P, PC, O, wheel, road, sway, a });
+  c.restore();
+}
+function addObj(type){
+  const n = D.objs.length, side = D.figs.length ? [-.3, .3, 0, -.15, .15][n % 5] : [0, -.28, .28, -.14, .14][n % 5];
+  D.objs.push({ type, x: side, y: D.figs.length ? .18 : 0, s: D.figs.length ? .3 : .5, color: D.figs[D.sel]?.color || D.color });
+  D.osel = D.objs.length - 1; D.edit = true;
+}
+/* --- frames --- */
+function newFrame(src){ const c = document.createElement('canvas'); c.width = c.height = 512; if(src) c.getContext('2d').drawImage(src, 0, 0); return c; }
+function frameCtx(){ return dFrames[D.cur].getContext('2d', { willReadFrequently: true }); }
+function renderDStrip(){ $('#dStrip').innerHTML = dFrames.map((f, i) => `<div data-i="${i}" class="${i === D.cur ? 'cur' : ''}" style="background-image:url(${f.toDataURL()})"><span>${i + 1}</span></div>`).join(''); }
+function strokeTo(a, b){
+  const x = frameCtx(); x.save(); x.lineCap = 'round'; x.lineJoin = 'round'; x.lineWidth = 512*D.width/100 * (D.tool === 'erase' ? 3.5 : 1);
+  x.globalCompositeOperation = D.tool === 'erase' ? 'destination-out' : 'source-over'; x.strokeStyle = D.color;
+  x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0] + .01, b[1] + .01); x.stroke(); x.restore();
+}
+/* --- photo of a drawing: keep only the ink --- */
+function extractLines(){
+  if(!dPhotoImg) return;
+  const img = dPhotoImg, k = Math.min(1, 1400/Math.max(img.naturalWidth, img.naturalHeight)), w = Math.round(img.naturalWidth*k), h = Math.round(img.naturalHeight*k);
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, w, h);
+  const im = x.getImageData(0, 0, w, h), d = im.data, bs = Math.max(8, Math.round(Math.max(w, h)/50)), bw = Math.ceil(w/bs), bh = Math.ceil(h/bs);
+  const sm = document.createElement('canvas'); sm.width = bw; sm.height = bh; const sx = sm.getContext('2d'), si = sx.createImageData(bw, bh);
+  for(let by = 0; by < bh; by++) for(let bx = 0; bx < bw; bx++){
+    const v = []; for(let y = by*bs; y < Math.min(h, by*bs + bs); y += 2) for(let xx = bx*bs; xx < Math.min(w, bx*bs + bs); xx += 2){ const o = (y*w + xx)*4; v.push([d[o]*.3 + d[o+1]*.59 + d[o+2]*.11, o]); }
+    v.sort((a, b) => a[0] - b[0]); const o = v[Math.floor(v.length*.65)][1], q = (by*bw + bx)*4; si.data[q] = d[o]; si.data[q+1] = d[o+1]; si.data[q+2] = d[o+2]; si.data[q+3] = 255;
+  }
+  sx.putImageData(si, 0, 0);
+  // paper mask per block: bright and unsaturated, shrunk by one block so table edges and shadows of the sheet drop out
+  const nb = bw*bh, pap = new Uint8Array(nb); let mxL = 1, cnt = 0;
+  for(let q = 0; q < nb; q++) mxL = Math.max(mxL, si.data[q*4]*.3 + si.data[q*4+1]*.59 + si.data[q*4+2]*.11);
+  const sats = new Float32Array(nb), lums = new Float32Array(nb), brightSat = [];
+  for(let q = 0; q < nb; q++){ const r = si.data[q*4], g = si.data[q*4+1], b = si.data[q*4+2], mx = Math.max(r, g, b), mn = Math.min(r, g, b); sats[q] = mx ? (mx - mn)/mx : 1; lums[q] = r*.3 + g*.59 + b*.11; if(lums[q] > mxL*.3) brightSat.push(sats[q]); }
+  brightSat.sort((a, b) => a - b); const satThr = Math.min(.5, (brightSat[Math.floor(brightSat.length*.15)] ?? .1) + .13);  // paper = the least colourful bright area, whatever the light
+  for(let q = 0; q < nb; q++){ pap[q] = sats[q] < satThr && lums[q] > mxL*.3 ? 1 : 0; cnt += pap[q]; }
+  const mc = document.createElement('canvas'); mc.width = bw; mc.height = bh; const mx2 = mc.getContext('2d'), mi = mx2.createImageData(bw, bh);
+  for(let by = 0; by < bh; by++) for(let bx = 0; bx < bw; bx++){
+    let ok = cnt < nb*.05 ? 1 : 1;
+    if(cnt >= nb*.05) for(let dy = -1; dy <= 1 && ok; dy++) for(let dx = -1; dx <= 1; dx++){ const yy = by + dy, xx = bx + dx; if(yy >= 0 && yy < bh && xx >= 0 && xx < bw && !pap[yy*bw + xx]){ ok = 0; break; } }
+    const q = (by*bw + bx)*4; mi.data[q] = mi.data[q+1] = mi.data[q+2] = ok*255; mi.data[q+3] = 255;
+  }
+  mx2.putImageData(mi, 0, 0);
+  const mb = document.createElement('canvas'); mb.width = w; mb.height = h; const mbx = mb.getContext('2d', { willReadFrequently: true }); mbx.imageSmoothingQuality = 'high'; mbx.drawImage(mc, 0, 0, bw, bh, 0, 0, bw*bs, bh*bs);
+  const mask = mbx.getImageData(0, 0, w, h).data;
+  const bc = document.createElement('canvas'); bc.width = w; bc.height = h; const bx2 = bc.getContext('2d', { willReadFrequently: true }); bx2.imageSmoothingQuality = 'high'; bx2.drawImage(sm, 0, 0, bw, bh, 0, 0, bw*bs, bh*bs);
+  const bg = bx2.getImageData(0, 0, w, h).data, thr = .06 + (100 - D.sens)/100*.5, sstep = (a, b, v) => { const t = clamp((v - a)/(b - a), 0, 1); return t*t*(3 - 2*t); };
+  const col = [1,3,5].map(i => parseInt(D.color.slice(i, i+2), 16));
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for(let i = 0; i < w*h; i++){
+    const o = i*4, Rb = bg[o], Gb = bg[o+1], Bb = bg[o+2];
+    const dd = Math.max((Rb - d[o])/Math.max(Rb, 1), (Gb - d[o+1])/Math.max(Gb, 1), (Bb - d[o+2])/Math.max(Bb, 1));
+    const a = sstep(thr, thr + .1, dd) * sstep(.5, .95, mask[o]/255);
+    if(D.recolor){ d[o] = col[0]; d[o+1] = col[1]; d[o+2] = col[2]; }
+    else if(a > 0){ const ia = Math.max(a, .35); d[o] = clamp((d[o] - (1 - ia)*Rb)/ia, 0, 255); d[o+1] = clamp((d[o+1] - (1 - ia)*Gb)/ia, 0, 255); d[o+2] = clamp((d[o+2] - (1 - ia)*Bb)/ia, 0, 255); }
+    d[o+3] = Math.round(a*255);
+  }
+  // drop specks (dust, paper grain): connected blobs smaller than a pen dot
+  const seen = new Uint8Array(w*h), minPx = Math.max(24, Math.round(w*h*.00003)), st = [], blob = [];
+  for(let i = 0; i < w*h; i++){
+    if(seen[i] || d[i*4+3] < 40) continue;
+    st.length = 0; blob.length = 0; st.push(i); seen[i] = 1;
+    while(st.length){ const q = st.pop(); blob.push(q); const qx = q % w, qy = (q - qx)/w;
+      for(let dy = -1; dy <= 1; dy++) for(let dx = -1; dx <= 1; dx++){ const xx = qx + dx, yy = qy + dy; if(xx < 0 || yy < 0 || xx >= w || yy >= h) continue; const n = yy*w + xx; if(!seen[n] && d[n*4+3] >= 40){ seen[n] = 1; st.push(n); } } }
+    if(blob.length < minPx){ for(const q of blob) d[q*4+3] = 0; }
+    else for(const q of blob){ const px = q % w, py = (q - px)/w; if(px < x0) x0 = px; if(px > x1) x1 = px; if(py < y0) y0 = py; if(py > y1) y1 = py; }
+  }
+  for(let i = 0; i < w*h; i++) if(d[i*4+3] < 40) d[i*4+3] = 0;
+  x.putImageData(im, 0, 0);
+  if(x1 < 0){ dPhotoCv = null; return; }
+  const pad = 6; x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(w - 1, x1 + pad); y1 = Math.min(h - 1, y1 + pad);
+  const out = document.createElement('canvas'); out.width = x1 - x0 + 1; out.height = y1 - y0 + 1; out.getContext('2d').drawImage(c, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+  dPhotoCv = out;
+}
+/* --- render --- */
+function drawDrawing(c, U, t, dur){
+  if(D.kind === 'rig'){
+    const p = dur > 0 ? (t/dur) % 1 : 0, pos = p*D.K, i = Math.floor(pos) % D.K, e = .5 - .5*Math.cos(Math.PI*(pos - Math.floor(pos)));
+    D.objs.forEach(o => drawObj(c, o, U, p));
+    D.figs.forEach(f => drawFig(c, f, lerpPose(f.keys[i], f.keys[(i + 1) % D.K], e), U));
+  } else if(D.kind === 'frames'){
+    if(dFrames.length){ c.imageSmoothingQuality = 'high'; c.drawImage(dFrames[Math.floor(t*D.fps + 1e-6) % dFrames.length], -U/2, -U/2, U, U); }
+  } else if(dPhotoCv){ const k = Math.min(U*.9/dPhotoCv.width, U*.9/dPhotoCv.height); c.imageSmoothingQuality = 'high'; c.drawImage(dPhotoCv, -dPhotoCv.width*k/2, -dPhotoCv.height*k/2, dPhotoCv.width*k, dPhotoCv.height*k); }
+  else { c.fillStyle = 'rgba(255,255,255,.55)'; c.font = `600 ${U*.05}px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('Vyber fotku kresby', 0, 0); }
+}
+function drawGifBg(c, W, H){ const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, G.bg); g.addColorStop(1, G.bg2); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+function drawDrawEdit(c, W, H){
+  const U = Math.min(W, H); c.clearRect(0, 0, W, H); if(view === 'gif') drawGifBg(c, W, H);
+  c.save(); c.translate(W/2, H/2);
+  if(D.kind === 'rig'){
+    D.objs.forEach((o, oi) => { drawObj(c, o, U, 0); if(oi === D.osel){ const hf = o.s*U/2, x = o.x*U, y = o.y*U; c.strokeStyle = 'rgba(245,184,61,.9)'; c.lineWidth = 1.5; c.setLineDash([5, 5]); c.strokeRect(x - hf, y - hf, hf*2, hf*2); c.setLineDash([]); c.fillStyle = '#f5b83d'; c.fillRect(x + hf - U*.016, y + hf - U*.016, U*.032, U*.032); } });
+    if(D.K > 1) D.figs.forEach(f => drawFig(c, f, f.keys[(D.key + D.K - 1) % D.K], U, .16));
+    D.figs.forEach(f => drawFig(c, f, f.keys[D.key], U));
+    D.figs.forEach((f, fi) => { const J = joints(f.keys[D.key], f, U, figS(U)), sel = fi === D.sel;
+      for(const hn of HANDLES){ const q = J[hn], r = U*(sel ? (hn === 'hip' ? .022 : .016) : .009); c.beginPath(); c.arc(q[0], q[1], r, 0, TAU); c.fillStyle = sel ? '#fff' : 'rgba(255,255,255,.6)'; c.fill(); c.lineWidth = U*.005; c.strokeStyle = hn === 'hip' ? '#111' : '#f5b83d'; c.stroke(); } });
+  } else {
+    c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 1; c.setLineDash([6, 6]); c.strokeRect(-U/2 + 1, -U/2 + 1, U - 2, U - 2); c.setLineDash([]);
+    if(D.onion && D.cur > 0){ c.globalAlpha = .25; c.drawImage(dFrames[D.cur - 1], -U/2, -U/2, U, U); c.globalAlpha = 1; }
+    if(dFrames[D.cur]) c.drawImage(dFrames[D.cur], -U/2, -U/2, U, U);
+  }
+  c.restore();
+  if(D.kind === 'frames' && pointer){ c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.beginPath(); c.arc(pointer.x, pointer.y, Math.max(2, U*D.width/100 * (D.tool === 'erase' ? 3.5 : 1)/2), 0, TAU); c.stroke(); }
+}
+/* --- pointer --- */
+function scenePt(e){ const pt = canvasPt(e), U = Math.min(cv.width, cv.height); return { x: pt.x - cv.width/2, y: pt.y - cv.height/2, U }; }
+const toFrame = s => [(s.x/s.U + .5)*512, (s.y/s.U + .5)*512];
+function drawDown(e){
+  const s = scenePt(e); cv.setPointerCapture(e.pointerId);
+  if(D.kind === 'rig'){
+    let best = null, bd = s.U*.07;
+    D.figs.forEach((f, fi) => { const J = joints(f.keys[D.key], f, s.U, figS(s.U)); for(const hn of HANDLES){ const q = J[hn], dist = Math.hypot(q[0] - s.x, q[1] - s.y) * (fi === D.sel ? 1 : 1.2); if(dist < bd){ bd = dist; best = { fi, h: hn }; } } });
+    if(best){ dDrag = best; if(D.sel !== best.fi){ D.sel = best.fi; syncUI(); } }
+    else {
+      let hit = -1, mode = 'move';
+      const so = D.objs[D.osel]; if(so && Math.hypot(s.x - (so.x + so.s/2)*s.U, s.y - (so.y + so.s/2)*s.U) < s.U*.045){ hit = D.osel; mode = 'scale'; }
+      if(hit < 0) for(let i = D.objs.length - 1; i >= 0; i--){ const o = D.objs[i]; if(Math.abs(s.x - o.x*s.U) < o.s*s.U/2 && Math.abs(s.y - o.y*s.U) < o.s*s.U/2){ hit = i; break; } }
+      if(hit >= 0){ const o = D.objs[hit]; dDrag = { obj: hit, mode, ox: s.x/s.U - o.x, oy: s.y/s.U - o.y }; }
+      if(D.osel !== hit){ D.osel = hit; syncUI(); }
+    }
+  } else {
+    if(!dFrames.length){ dFrames.push(newFrame()); D.cur = 0; }
+    dUndo.push({ i: D.cur, im: frameCtx().getImageData(0, 0, 512, 512) }); if(dUndo.length > 12) dUndo.shift();
+    dLast = toFrame(s); strokeTo(dLast, dLast); dDrag = true;
+  }
+}
+function drawMove(e){
+  const s = scenePt(e); pointer = canvasPt(e); if(!dDrag) return;
+  if(D.kind === 'rig' && dDrag.obj !== undefined){
+    const o = D.objs[dDrag.obj]; if(!o) return;
+    if(dDrag.mode === 'scale') o.s = clamp(2*Math.max(Math.abs(s.x/s.U - o.x), Math.abs(s.y/s.U - o.y)), .08, 1.4);
+    else { o.x = clamp(s.x/s.U - dDrag.ox, -.7, .7); o.y = clamp(s.y/s.U - dDrag.oy, -.7, .7); }
+  } else if(D.kind === 'rig'){
+    const f = D.figs[dDrag.fi], P = f.keys[D.key], S = figS(s.U), J = joints(P, f, s.U, S), hn = dDrag.h;
+    if(hn === 'hip'){ P.x = s.x/s.U - f.x; P.y = (s.y - S*.08)/s.U; }
+    else if(hn === 'neck') P.t = Math.atan2(s.x - J.hip[0], -(s.y - J.hip[1]));
+    else if(hn === 'head') P.h = Math.atan2(s.x - J.neck[0], -(s.y - J.neck[1])) - P.t;
+    else { const [par, key] = HMAP[hn]; P[key] = Math.atan2(s.x - J[par][0], s.y - J[par][1]); }
+  } else { const q = toFrame(s); strokeTo(dLast, q); dLast = q; }
+}
+function drawUp(){ if(dDrag && D.kind === 'frames') renderDStrip(); dDrag = null; }
+
+/* ---------- emoji scene ---------- */
+function emojiAnimated(){ return (E.base === 'draw' && drawAnimDur() > 0) || E.anim !== 'none' || E.fx !== 'none' || (E.blink && E.base === 'build') || (E.text.value.trim() && E.text.anim !== 'none'); }
+function drawEmoji(c, W, H, t, dur){
+  const p = dur > 0 && emojiAnimated() ? (t/dur) % 1 : 0;
+  c.clearRect(0,0,W,H);
+  if(E.bg === 'circle'){ c.fillStyle = E.bgColor; c.beginPath(); c.arc(W/2, H/2, W/2, 0, TAU); c.fill(); }
+  if(E.bg === 'square'){ c.fillStyle = E.bgColor; c.beginPath(); c.roundRect(0, 0, W, H, W*.16); c.fill(); }
+  let dx = 0, dy = 0, rot = 0, sc = 1;
+  if(E.anim === 'bounce') dy = -Math.abs(Math.sin(p*TAU)) * W*.09 + W*.03;
+  if(E.anim === 'pulse') sc = 1 + .08*Math.sin(p*TAU);
+  if(E.anim === 'shake') rot = Math.sin(p*TAU*3)*.16;
+  if(E.anim === 'wobble'){ rot = Math.sin(p*TAU)*.2; dx = Math.sin(p*TAU)*W*.04; }
+  if(E.anim === 'float') dy = Math.sin(p*TAU)*W*.04;
+  if(E.anim === 'spin') rot = p*TAU;
+  const B = W*.74;
+  c.save(); c.translate(W/2 + E.x*W/100 + dx, H/2 + E.y*W/100 + dy); c.rotate(rot); c.scale(sc*E.scale/100, sc*E.scale/100);
+  if(E.base === 'build') drawFace(c, B/2, p);
+  else if(E.base === 'draw') drawDrawing(c, W, t, dur);
+  else if(cut){ const s = getSticker(); if(s){ const k = Math.min(W*.9/s.width, H*.9/s.height); c.imageSmoothingQuality = 'high'; c.drawImage(s, -s.width*k/2, -s.height*k/2, s.width*k, s.height*k); } }
+  else { c.fillStyle = 'rgba(255,255,255,.5)'; c.font = `600 ${W*.05}px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('Vyber fotku alebo logo', 0, 0); }
+  c.restore();
+  if(E.fx !== 'none'){
+    const N = 6;
+    for(let i = 0; i < N; i++){
+      const ph = (p + i/N) % 1, rx = (Math.sin(i*12.9898)*43758.5453 % 1 + 1) % 1, x = W*(.1 + .8*rx);
+      if(E.fx === 'sparkles'){ const s = Math.max(0, Math.sin(ph*TAU)) * W*.07, y = H*(.12 + .76*((rx*7.3) % 1)); if(s > 0){ starPath(c, x, y, s, s*.3, 4); c.fillStyle = '#fff'; c.fill(); c.strokeStyle = '#f2b100'; c.lineWidth = W*.008; c.stroke(); } }
+      else { const y = H*(1.05 - ph*1.15), a = Math.sin(ph*Math.PI), s = W*(.05 + .04*rx); c.globalAlpha = a;
+        if(E.fx === 'hearts'){ heartPath(c, x + Math.sin(ph*TAU*2)*W*.02, y, s*2); c.fillStyle = '#ff3b6b'; c.fill(); c.strokeStyle = '#fff'; c.lineWidth = W*.008; c.stroke(); }
+        else { c.beginPath(); c.arc(x, y, s, 0, TAU); c.fillStyle = 'rgba(140,210,255,.4)'; c.fill(); c.strokeStyle = '#bfe6ff'; c.lineWidth = W*.008; c.stroke(); }
+        c.globalAlpha = 1; }
+    }
+  }
+  drawText(c, W, H, E.text, p);
+}
+
+/* ---------- preview loop ---------- */
+function loopDur(){ if(view === 'emoji') return E.base === 'draw' && drawAnimDur() ? drawAnimDur() : E.dur; if(G.src === 'draw') return drawAnimDur() || G.dur; return G.src === 'video' && vidReady ? G.len/G.speed : G.src === 'images' && gImgs.length ? gImgs.length*G.per : G.dur; }
+function emojiSize(){ return E.plat === 'custom' ? even(E.size) : EP[E.plat].size; }
+const m1 = $('#m1').getContext('2d'), m2 = $('#m2').getContext('2d');
+function tick(now){
+  if(view !== 'lib' && !busy){
+    const dur = loopDur();
+    if(view === 'gif'){
+      const [W, H] = gifDims(); if(cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
+      let t = ((now - t0)/1000) % dur;
+      if(G.src === 'video' && vidReady){
+        const end = Math.min(video.duration, G.start + G.len);
+        if(video.currentTime < G.start - .05 || video.currentTime >= end - .03){ video.currentTime = G.start; }
+        if(video.paused) video.play().catch(()=>{}); video.playbackRate = G.speed;
+        t = Math.max(0, video.currentTime - G.start)/G.speed;
+      }
+      if(drawEditing()) drawDrawEdit(ctx, W, H); else drawGif(ctx, W, H, t, dur);
+    } else {
+      if(cv.width !== 512 || cv.height !== 512){ cv.width = 512; cv.height = 512; }
+      if(drawEditing()) drawDrawEdit(ctx, 512, 512);
+      else if(editing()) drawEdit(ctx, 512, 512);
+      else { drawEmoji(ctx, 512, 512, ((now - t0)/1000) % dur, dur); m1.clearRect(0,0,48,48); m1.drawImage(cv, 0, 0, 48, 48); m2.clearRect(0,0,88,88); m2.drawImage(cv, 0, 0, 88, 88); }
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ---------- UI binding ---------- */
+const getP = k => k.split('.').reduce((a, x) => a?.[x], R);
+const setP = (k, v) => { const ks = k.split('.'), l = ks.pop(); ks.reduce((a, x) => a[x], R)[l] = v; };
+const OUT = { 'G.start': v => sk(v) + ' s', 'G.len': v => sk(v) + ' s', 'G.speed': v => sk(v, 2) + '×', 'G.per': v => sk(v) + ' s', 'G.dur': v => sk(v) + ' s', 'G.zoom': v => Math.round(v*100) + ' %', 'G.size': v => v + ' px', 'G.logo.size': v => v + ' %', 'G.text.size': v => sk(v), 'E.size': v => v + ' px', 'E.scale': v => v + ' %', 'E.dur': v => sk(v) + ' s', 'E.outline': v => sk(v) + ' %', 'E.brush': v => sk(v), 'G.panX': v => sk(v, 2), 'G.panY': v => sk(v, 2), 'D.dur': v => sk(v) + ' s', 'D.size': v => v + ' %', 'D.fps': v => v + ' obr./s', 'D.width': v => sk(v) };
+function setOut(k){ const o = document.querySelector(`[data-o="${k}"]`); if(o){ const v = getP(k); o.textContent = OUT[k] ? OUT[k](v) : v; } }
+$$('[data-k]:not(.seg)').forEach(el => el.addEventListener('input', () => { const k = el.dataset.k; setP(k, el.type === 'checkbox' ? el.checked : el.type === 'range' ? parseFloat(el.value) : el.value); setOut(k); changed(k); }));
+$$('.seg[data-k]').forEach(seg => seg.addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; setP(seg.dataset.k, seg.dataset.num ? parseFloat(b.dataset.v) : b.dataset.v); changed(seg.dataset.k); syncUI(); }));
+$('#extras').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; const x = b.dataset.x, i = E.extras.indexOf(x); if(i >= 0) E.extras.splice(i, 1); else E.extras.push(x); syncUI(); });
+const SWATCH = ['#ffd23f','#ff9f1c','#ff5d5d','#ff7eb6','#b983ff','#4da3ff','#3ddc97','#a3e635','#f1f1f1','#8d6e63'];
+$('#sw').innerHTML = SWATCH.map(c => `<button data-c="${c}" style="background:${c}" aria-label="Farba ${c}"></button>`).join('');
+$('#sw').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ E.color = b.dataset.c; syncUI(); } });
+function changed(k){
+  if(k === 'G.plat'){ const P = GP[G.plat]; if(P.fmt){ G.fmt = P.fmt; G.aspect = P.aspect; if(P.size) G.size = P.size; } }
+  if(k === 'G.start' || k === 'G.len'){ if(vidReady){ G.len = Math.min(G.len, Math.max(.5, video.duration - G.start)); video.currentTime = G.start; } }
+  if(k === 'E.base' && E.base !== 'photo') E.tool = 'view';
+  if(k === 'D.kind' || k === 'E.base' || k === 'G.src'){ D.edit = D.kind !== 'photo'; if(D.kind === 'frames' && !dFrames.length){ dFrames.push(newFrame()); D.cur = 0; } if(D.kind === 'frames') renderDStrip(); }
+  if((k === 'D.sens' || k === 'D.recolor' || k === 'D.color') && dPhotoImg && D.kind === 'photo') extractLines();
+  $('#result').hidden = true;
+}
+function syncUI(){
+  $$('[data-k]:not(.seg)').forEach(el => { const v = getP(el.dataset.k); if(el.type === 'checkbox') el.checked = !!v; else el.value = v ?? ''; setOut(el.dataset.k); });
+  $$('.seg[data-k]').forEach(seg => { const cur = String(getP(seg.dataset.k)); seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === cur)); });
+  $$('#extras button').forEach(b => b.classList.toggle('on', E.extras.includes(b.dataset.x)));
+  $$('#sw button').forEach(b => b.classList.toggle('on', b.dataset.c === E.color));
+  $('#pGif').hidden = view !== 'gif'; $('#pEmoji').hidden = view !== 'emoji';
+  $('#work').hidden = view === 'lib'; $('#lib').hidden = view !== 'lib'; $('#hdrExport').hidden = view === 'lib'; $('#clearBtn').hidden = view === 'lib';
+  $$('#modes button').forEach(b => b.classList.toggle('on', b.dataset.view === view));
+  $('#gVideo').hidden = G.src !== 'video'; $('#gImages').hidden = G.src !== 'images'; $('#gNone').hidden = G.src !== 'none' && G.src !== 'draw'; $('#gFrame').hidden = G.src === 'none' || G.src === 'draw';
+  const da = drawActive(), pd = $('#pDraw'); pd.hidden = !da;
+  if(da){
+    const anchor = view === 'gif' ? $('#gSrcBox') : $('#eBaseBox'); if(pd.previousElementSibling !== anchor) anchor.after(pd);
+    $('#dRig').hidden = D.kind !== 'rig'; $('#dFrames').hidden = D.kind !== 'frames'; $('#dPhoto').hidden = D.kind !== 'photo'; $('#dAnimRow').hidden = view !== 'gif'; $('#dPlayRow').hidden = D.kind === 'photo';
+    $('#dPlay').textContent = D.edit ? '▶ Prehrať' : '✏ Upraviť';
+    $('#dHint').textContent = !D.edit ? 'Prehráva sa pohyb.' : D.kind === 'rig' ? 'Chyť krúžok na ruke, nohe alebo hlave a potiahni. Čierny krúžok posúva celého panáčika. Obrázok chytíš a posunieš, žltým rohom mu zmeníš veľkosť.' : 'Kresli myšou alebo prstom priamo do náhľadu.';
+    $$('#dCount button').forEach(b => b.classList.toggle('on', +b.dataset.n === D.figs.length));
+    $('#dKeys').innerHTML = Array.from({ length: D.K }, (_, i) => `<button data-i="${i}" class="${D.edit && i === D.key ? 'on' : ''}">${i + 1}</button>`).join('');
+    $('#dFigColor').value = D.figs[D.sel]?.color || '#1d4ed8';
+    $('#dObjRow').hidden = !D.objs[D.osel]; if(D.objs[D.osel]) $('#dObjColor').value = D.objs[D.osel].color;
+  }
+  $('#gQual').hidden = G.fmt !== 'gif'; $('#logoDel').hidden = !logoImg;
+  const gp = GP[G.plat]; $('#gTip').textContent = gp.tip + (gp.fmt === 'mp4' && G.fmt === 'gif' ? ' Pozor: zvolil si GIF, ktorý táto platforma nemusí prijať.' : '');
+  $('#eBuild').hidden = E.base !== 'build'; $('#ePhoto').hidden = E.base !== 'photo'; $('#blinkRow').hidden = E.base !== 'build';
+  $('#eTip').textContent = EP[E.plat].tip; $('#eSizeRow').hidden = E.plat !== 'custom';
+  $('#toolNote').textContent = { view: 'Náhľad hotového emoji.', wand: 'Klikni na pozadie fotky. Zmizne všetko, čo má podobnú farbu a súvisí s miestom kliknutia. Citlivosť určuje, ako veľmi sa farba môže líšiť.', erase: 'Ťahaj myšou po miestach, ktoré majú zmiznúť.', restore: 'Ťahaj myšou po miestach, ktoré sa majú vrátiť.' }[E.tool];
+  cv.classList.toggle('tool', !!editing() || drawEditing());
+  $('#minis').hidden = view !== 'emoji';
+  const anim = emojiAnimated(); $('#animNote').textContent = anim ? 'Pohyblivé emoji sa uloží ako GIF s priehľadným pozadím.' : 'Bez animácie sa uloží obrázok s priehľadným pozadím.';
+  // info bar
+  if(view === 'gif'){ const [W, H] = gifDims(); $('#iDim').textContent = `${W} × ${H}`; const d = loopDur(), md = G.fmt === 'mp4' ? (gp.minDur || 0) : 0; $('#iDur').textContent = sk(md > d ? Math.ceil(md/d)*d : d) + ' s'; $('#iFmt').textContent = G.fmt === 'mp4' ? 'MP4' : 'GIF'; }
+  else if(view === 'emoji'){ const s = emojiSize(); $('#iDim').textContent = `${s} × ${s}`; $('#iDur').textContent = anim ? sk(E.dur) + ' s' : 'obrázok'; $('#iFmt').textContent = anim ? 'GIF' : EP[E.plat].still.toUpperCase(); }
+  const lbl = view === 'gif' ? (G.fmt === 'mp4' ? 'Uložiť MP4' : 'Uložiť GIF') : anim ? 'Uložiť pohyblivé emoji (GIF)' : 'Uložiť emoji';
+  $('#exBtn').textContent = lbl; $('#hdrExport').textContent = lbl;
+  if(!$('#name').dataset.touched) $('#name').value = view === 'emoji' ? 'emoji' : 'gif';
+}
+$('#name').addEventListener('input', () => $('#name').dataset.touched = 1);
+/* drawing controls */
+$('#dObjs').innerHTML = Object.entries(OBJS).map(([k, v]) => `<button data-t="${k}">${v[0]}</button>`).join('');
+$('#dObjs').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ addObj(b.dataset.t); syncUI(); } });
+$('#dPresets').innerHTML = Object.entries(PRESETS).map(([k, v]) => `<button data-p="${k}">${v.name}</button>`).join('');
+$('#dPresets').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ addPreset(b.dataset.p); syncUI(); toast(`Pridaná postavička ${PRESETS[b.dataset.p].name}. Pohyb zmeníš nižšie.`); } });
+$('#dObjColor').addEventListener('input', e => { if(D.objs[D.osel]) D.objs[D.osel].color = e.target.value; });
+$('#dObjDel').onclick = () => { if(D.objs[D.osel]){ D.objs.splice(D.osel, 1); D.osel = -1; syncUI(); } };
+/* start over */
+let DEF = null, clearT = null;
+function resetAll(){
+  const d = JSON.parse(DEF); Object.assign(G, d.G); Object.assign(E, d.E); Object.assign(D, d.D);
+  video.pause(); if(video.src){ const u = video.src; video.onerror = null; video.onloadedmetadata = null; video.removeAttribute('src'); video.load(); URL.revokeObjectURL(u); }
+  vidReady = false; vidFile = null; $('#vidName').textContent = 'Vyber krátke video (MP4, MOV, WebM)';
+  gImgs = []; renderStrip(); logoImg = null; cut = null; undo = []; cutVer++; $('#phName').textContent = 'JPG alebo PNG';
+  dFrames = []; dUndo = []; dPhotoImg = dPhotoSrc = dPhotoCv = null; dDrag = null; $('#dPhName').textContent = 'Kresba perom alebo fixkou na bielom papieri'; renderDStrip();
+  setCount(1); delete $('#name').dataset.touched; $('#result').hidden = true; t0 = performance.now(); syncUI();
+}
+$('#clearBtn').onclick = () => {
+  if(busy) return; const l = $('#clearLbl');
+  if(!clearT){ l.textContent = 'Naozaj zmazať všetko?'; clearT = setTimeout(() => { clearT = null; l.textContent = 'Zmazať'; }, 3500); return; }
+  clearTimeout(clearT); clearT = null; l.textContent = 'Zmazať'; resetAll(); toast('Zmazané. Začínaš odznova, Knižnica ostala.');
+};
+$('#dPlay').onclick = () => { D.edit = !D.edit; t0 = performance.now(); syncUI(); };
+$('#dCount').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ setCount(+b.dataset.n); syncUI(); } });
+$('#dMoves').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ applyMove(b.dataset.m); D.edit = false; t0 = performance.now(); syncUI(); } });
+$('#dKeys').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ D.key = +b.dataset.i; D.edit = true; syncUI(); } });
+$('#dKeyAdd').onclick = () => { if(D.K >= 8){ toast('Najviac 8 póz.'); return; } D.figs.forEach(f => f.keys.splice(D.key + 1, 0, clonePose(f.keys[D.key]))); D.K++; D.key++; D.edit = true; syncUI(); toast('Pridaná nová póza. Uprav ju potiahnutím krúžkov.'); };
+$('#dKeyDel').onclick = () => { if(D.K <= 1){ toast('Aspoň jedna póza musí zostať.'); return; } D.figs.forEach(f => f.keys.splice(D.key, 1)); D.K--; D.key = Math.min(D.key, D.K - 1); syncUI(); };
+$('#dFigColor').addEventListener('input', e => { if(D.figs[D.sel]) D.figs[D.sel].color = e.target.value; });
+$('#dColorAll').onclick = () => { const c = $('#dFigColor').value; D.figs.forEach(f => f.color = c); };
+$('#dStrip').addEventListener('click', e => { const d = e.target.closest('div[data-i]'); if(d){ D.cur = +d.dataset.i; D.edit = true; renderDStrip(); syncUI(); } });
+$('#dFAdd').onclick = () => { dFrames.splice(D.cur + 1, 0, newFrame()); D.cur++; D.edit = true; renderDStrip(); syncUI(); };
+$('#dFDup').onclick = () => { if(!dFrames.length) return; dFrames.splice(D.cur + 1, 0, newFrame(dFrames[D.cur])); D.cur++; D.edit = true; renderDStrip(); syncUI(); };
+$('#dFDel').onclick = () => { if(dFrames.length <= 1){ toast('Aspoň jeden obrázok musí zostať.'); return; } dFrames.splice(D.cur, 1); D.cur = Math.min(D.cur, dFrames.length - 1); dUndo = []; renderDStrip(); syncUI(); };
+$('#dFUndo').onclick = () => { const u = dUndo.pop(); if(!u || !dFrames[u.i]){ toast('Nie je čo vrátiť.'); return; } dFrames[u.i].getContext('2d').putImageData(u.im, 0, 0); D.cur = u.i; renderDStrip(); };
+$('#dFClear').onclick = () => { if(!dFrames[D.cur]) return; dUndo.push({ i: D.cur, im: frameCtx().getImageData(0, 0, 512, 512) }); frameCtx().clearRect(0, 0, 512, 512); renderDStrip(); };
+async function setDrawPhoto(src, name){ dPhotoImg = await loadImg(src); dPhotoSrc = src; if(name) $('#dPhName').textContent = name; extractLines(); if(!dPhotoCv) toast('Na fotke som nenašiel žiadne čiary. Skús vyššiu citlivosť.', true); }
+$('#dPhBtn').onclick = () => $('#dPhIn').click();
+$('#dPhIn').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if(!f) return; try { await setDrawPhoto(await readDataURL(f), f.name); } catch(err){ toast('Fotku sa nepodarilo otvoriť. Použi JPG alebo PNG.', true); } };
+$('#dPhTrace').onclick = () => {
+  if(!dPhotoCv){ toast('Najprv vyber fotku kresby.', true); return; }
+  const fr = newFrame(), k = Math.min(440/dPhotoCv.width, 440/dPhotoCv.height), x = fr.getContext('2d'); x.imageSmoothingQuality = 'high';
+  x.drawImage(dPhotoCv, 256 - dPhotoCv.width*k/2, 256 - dPhotoCv.height*k/2, dPhotoCv.width*k, dPhotoCv.height*k);
+  dFrames = [fr]; D.cur = 0; dUndo = []; D.kind = 'frames'; D.edit = true; renderDStrip(); syncUI();
+  toast('Kresba je prvý obrázok. Klikni na „+ Kópia“ a zmeň, čo sa má hýbať.');
+};
+$('#modes').addEventListener('click', e => { const b = e.target.closest('button'); if(!b || busy) return; view = b.dataset.view; if(view !== 'gif') video.pause(); if(view === 'lib') renderLib(); $('#result').hidden = true; syncUI(); });
+
+/* ---------- file inputs ---------- */
+function setVideo(f){
+  if(video.src) URL.revokeObjectURL(video.src);
+  vidReady = false; vidFile = f; $('#vidName').textContent = f.name;
+  video.onloadedmetadata = () => { vidReady = true; G.src = 'video'; G.start = 0; G.len = Math.min(3, video.duration); $('#gStart').max = Math.max(0, video.duration - .5).toFixed(1); $('#gLen').max = Math.min(10, video.duration).toFixed(1); syncUI(); };
+  video.onerror = () => toast('Toto video sa nedá otvoriť. Skús MP4.', true);
+  video.src = URL.createObjectURL(f); video.load();
+}
+async function addImgs(files){
+  for(const f of files){ try { const src = await readDataURL(f); gImgs.push({ img: await loadImg(src), src, blob: f }); } catch(e){ toast(`Obrázok ${f.name} sa nedá otvoriť. Použi JPG alebo PNG.`, true); } }
+  if(gImgs.length) G.src = 'images'; renderStrip(); syncUI();
+}
+function renderStrip(){ $('#imgStrip').innerHTML = gImgs.map((g, i) => `<div style="background-image:url(${g.src})"><button data-i="${i}" title="Odstrániť">✕</button></div>`).join(''); }
+$('#imgStrip').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ gImgs.splice(+b.dataset.i, 1); renderStrip(); syncUI(); } });
+$('#vidBtn').onclick = () => $('#vidIn').click(); $('#vidIn').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if(f) setVideo(f); };
+$('#imgBtn').onclick = () => $('#imgIn').click(); $('#imgIn').onchange = e => { const fs = [...e.target.files]; e.target.value = ''; if(fs.length) addImgs(fs); };
+async function setLogo(src){ logoImg = src ? await loadImg(src) : null; G.logo.src = src; syncUI(); }
+$('#logoBtn').onclick = () => $('#logoIn').click(); $('#logoIn').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if(f) setLogo(await readDataURL(f)); };
+$('#logoDel').onclick = () => setLogo(null);
+$('#phBtn').onclick = () => $('#phIn').click();
+$('#phIn').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if(!f) return; try { await setPhoto(await readDataURL(f), f.name); E.base = 'photo'; syncUI(); } catch(err){ toast('Fotku sa nepodarilo otvoriť. Použi JPG alebo PNG.', true); } };
+$('#aiBtn').onclick = autoCut;
+$('#undoBtn').onclick = () => { if(cut && undo.length){ cut.work.getContext('2d').putImageData(undo.pop(), 0, 0); cutVer++; } else toast('Nie je čo vrátiť.'); };
+$('#resetBtn').onclick = () => { if(!cut) return; pushUndo(); const x = cut.work.getContext('2d'); x.clearRect(0,0,cut.work.width,cut.work.height); x.drawImage(cut.orig, 0, 0); cutVer++; };
+const stage = $('#stage');
+stage.addEventListener('dragover', e => { e.preventDefault(); stage.classList.add('over'); });
+stage.addEventListener('dragleave', () => stage.classList.remove('over'));
+stage.addEventListener('drop', async e => {
+  e.preventDefault(); stage.classList.remove('over'); const fs = [...e.dataTransfer.files], v = fs.find(f => f.type.startsWith('video/')), im = fs.filter(f => f.type.startsWith('image/'));
+  if(drawActive() && D.kind === 'photo' && im[0]){ await setDrawPhoto(await readDataURL(im[0]), im[0].name); }
+  else if(view === 'emoji' && im[0]){ await setPhoto(await readDataURL(im[0]), im[0].name); E.base = 'photo'; syncUI(); }
+  else if(view === 'gif' && v) setVideo(v); else if(view === 'gif' && im.length) addImgs(im);
+});
+
+/* ---------- encoders ---------- */
+let gifenc = null;
+async function loadGifenc(){ if(!gifenc) gifenc = await import('https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js'); return gifenc; }
+function progress(p){ $('#exBar').firstElementChild.style.width = (clamp(p, 0, 1)*100) + '%'; }
+async function encodeGif(W, H, fps, dur, transparent, drawAt, colors = 256){
+  const { GIFEncoder, quantize, applyPalette } = await loadGifenc();
+  const gif = GIFEncoder(), n = Math.max(1, Math.round(dur*fps)), delay = Math.round(1000/fps);
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d', { willReadFrequently: true });
+  for(let i = 0; i < n; i++){
+    await drawAt(x, W, H, i/fps);
+    const data = x.getImageData(0, 0, W, H).data;
+    if(transparent){
+      for(let q = 3; q < data.length; q += 4){ if(data[q] < 110){ data[q-3] = data[q-2] = data[q-1] = data[q] = 0; } else data[q] = 255; }
+      const pal = quantize(data, colors, { format: 'rgba4444', oneBitAlpha: true }), idx = applyPalette(data, pal, 'rgba4444'), ti = pal.findIndex(q => q[3] === 0);
+      gif.writeFrame(idx, W, H, { palette: pal, delay, transparent: ti >= 0, transparentIndex: Math.max(0, ti), dispose: 2 });
+    } else { const pal = quantize(data, colors), idx = applyPalette(data, pal); gif.writeFrame(idx, W, H, { palette: pal, delay }); }
+    progress((i + 1)/n); if(i % 2 === 0) await sleep(0);
+  }
+  gif.finish(); return new Blob([gif.bytes()], { type: 'image/gif' });
+}
+async function encodeMp4(W, H, dur, minDur, drawAt){
+  if(typeof Mp4Muxer === 'undefined' || typeof VideoEncoder === 'undefined') throw new Error('Tento prehliadač nevie uložiť MP4. Použi Chrome alebo Edge, alebo zvoľ GIF.');
+  let cfg = null;
+  for(const codec of ['avc1.640028','avc1.640032','avc1.4d0028','avc1.42e028']){ const cnd = { codec, width: W, height: H, bitrate: 8e6, framerate: 30, avc: { format: 'avc' } }; try { if((await VideoEncoder.isConfigSupported(cnd)).supported){ cfg = cnd; break; } } catch(e){} }
+  if(!cfg) throw new Error('Prehliadač nepodporuje kódovanie H.264. Zvoľ typ súboru GIF.');
+  const target = new Mp4Muxer.ArrayBufferTarget(), muxer = new Mp4Muxer.Muxer({ target, video: { codec: 'avc', width: W, height: H, frameRate: 30 }, fastStart: 'in-memory', firstTimestampBehavior: 'offset' });
+  let err = null; const enc = new VideoEncoder({ output: (ch, m) => muxer.addVideoChunk(ch, m), error: e => err = e }); enc.configure(cfg);
+  const FPS = 30, n = Math.max(1, Math.round(dur*FPS)), reps = Math.max(1, Math.ceil((minDur || 0)/dur - 1e-6)), total = n*reps;
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  for(let k = 0; k < total && !err; k++){
+    await drawAt(x, W, H, (k % n)/FPS);
+    const vf = new VideoFrame(c, { timestamp: Math.round(k*1e6/FPS), duration: Math.round(1e6/FPS) }); enc.encode(vf, { keyFrame: k % 30 === 0 }); vf.close();
+    while(enc.encodeQueueSize > 8) await sleep(2);
+    progress((k + 1)/total); if(k % 6 === 0) await sleep(0);
+  }
+  await enc.flush(); enc.close(); if(err) throw err; muxer.finalize();
+  return { blob: new Blob([target.buffer], { type: 'video/mp4' }), secs: total/FPS };
+}
+function seekTo(t){ return new Promise(r => { if(Math.abs(video.currentTime - t) < 1e-3) return r(); video.addEventListener('seeked', r, { once: true }); video.currentTime = t; }); }
+const toBlob = (c, type, q) => new Promise(r => c.toBlob(r, type, q));
+
+/* ---------- export ---------- */
+async function doExport(){
+  if(busy) return;
+  if(view === 'gif' && G.src === 'video' && !vidReady){ toast('Najprv vyber video.', true); return; }
+  if(view === 'gif' && G.src === 'images' && !gImgs.length){ toast('Najprv pridaj fotky.', true); return; }
+  if(view === 'emoji' && E.base === 'photo' && !cut){ toast('Najprv vyber fotku.', true); return; }
+  if(drawActive() && D.kind === 'photo' && !dPhotoCv){ toast('Najprv vyber fotku kresby.', true); return; }
+  busy = true; $('#exBtn').disabled = $('#hdrExport').disabled = true; $('#exBar').hidden = false; $('#result').hidden = true; progress(0);
+  const name = ($('#name').value.trim() || (view === 'emoji' ? 'emoji' : 'gif')).replace(/[\\/:*?"<>|]/g, '-');
+  try {
+    await document.fonts.load(`900 40px ${FONT}`).catch(()=>{});
+    let blob, ext, W, H, limit = 0, pname, tip, notes = [], secs = 0;
+    if(view === 'gif'){
+      const P = GP[G.plat], dur = loopDur(); pname = P.name; tip = P.tip; video.pause();
+      const drawAt = async (x, w, h, t) => { if(G.src === 'video' && vidReady) await seekTo(Math.min(video.duration - .02, G.start + t*G.speed)); drawGif(x, w, h, t, dur); };
+      if(G.fmt === 'mp4'){ [W, H] = gifDims(); const r = await encodeMp4(W, H, dur, P.minDur || 0, drawAt); blob = r.blob; secs = r.secs; ext = 'mp4'; }
+      else {
+        limit = (P.maxMB || 0)*1024*1024; let scale = 1, fps = G.fps;
+        for(let i = 0; i < 4; i++){
+          [W, H] = gifDims(scale); blob = await encodeGif(W, H, fps, dur, false, drawAt);
+          if(!limit || blob.size <= limit) break;
+          scale *= Math.max(.5, Math.sqrt(limit/blob.size)*.92); if(i === 1 && fps > 10) fps = 10; notes.push(1);
+        }
+        if(notes.length) notes = [`GIF bol automaticky zmenšený na ${W} × ${H}, aby sa zmestil do limitu.`];
+        ext = 'gif'; secs = dur;
+      }
+    } else {
+      const P = EP[E.plat]; pname = P.name; tip = P.tip; W = H = emojiSize();
+      if(!emojiAnimated()){
+        const c = document.createElement('canvas'); c.width = c.height = W; drawEmoji(c.getContext('2d'), W, W, 0, 0);
+        limit = (P.maxKB || 0)*1024; ext = P.still; blob = await toBlob(c, 'image/' + ext, .95);
+        if(limit && blob.size > limit){ for(const q of [.9, .8, .65, .5]){ blob = await toBlob(c, 'image/webp', q); ext = 'webp'; if(blob.size <= limit) break; } }
+        progress(1);
+      } else {
+        limit = (P.maxAnimKB || 0)*1024; const dur = loopDur(), tr = E.bg !== 'square';
+        for(const [fps, colors] of [[15, 256], [12, 128], [10, 64], [8, 32]]){
+          blob = await encodeGif(W, W, fps, dur, tr, async (x, w, h, t) => drawEmoji(x, w, h, t, dur), colors);
+          if(!limit || blob.size <= limit) break; notes = ['Animácia bola zjednodušená, aby sa zmestila do limitu.'];
+        }
+        ext = 'gif'; secs = dur;
+      }
+    }
+    const file = `${name}.${ext}`; download(blob, file);
+    const over = limit && blob.size > limit, res = $('#result'); res.hidden = false; res.className = 'result ' + (over ? 'warn' : 'ok');
+    res.innerHTML = `<b>${esc(file)}</b> · ${W} × ${H} · ${fmtSize(blob.size)}${secs ? ' · ' + sk(secs) + ' s' : ''}<br>` +
+      (over ? `Súbor je väčší ako limit pre ${pname} (${fmtSize(limit)}). Skús kratšiu slučku alebo menej efektov.` : limit ? `✓ V limite pre ${pname} (${fmtSize(limit)}).` : `✓ Pripravené pre ${pname}.`) +
+      (notes.length ? '<br>' + notes.join(' ') : '') + `<br><span class="note">${esc(tip)}</span>`;
+    await saveLib({ name, file, blob, w: W, h: H, plat: pname }); toast('Uložené');
+  } catch(err){ console.error(err); const res = $('#result'); res.hidden = false; res.className = 'result warn'; res.textContent = 'Uloženie zlyhalo: ' + (err.message || err); toast('Uloženie zlyhalo.', true); }
+  finally { busy = false; $('#exBtn').disabled = $('#hdrExport').disabled = false; $('#exBar').hidden = true; t0 = performance.now(); }
+}
+/* Stickmo: saving is a Pro feature */
+function stickmoPro(){ try{ return !!(window.parent && window.parent !== window && window.parent.STICKMO_PRO ? window.parent.STICKMO_PRO() : true); }catch(e){ return true; } }
+function gatedExport(){ if(!stickmoPro()){ try{ window.parent.STICKMO_UNLOCK(); }catch(e){} return; } doExport(); }
+$('#exBtn').onclick = gatedExport; $('#hdrExport').onclick = gatedExport;
+
+/* ---------- library (IndexedDB) ---------- */
+function idb(){ return new Promise((res, rej) => { const r = indexedDB.open('gif-emoji-dielna', 1); r.onupgradeneeded = () => r.result.createObjectStore('items', { keyPath: 'id' }); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function libTx(mode, fn){ const db = await idb(); return new Promise((res, rej) => { const tx = db.transaction('items', mode), rq = fn(tx.objectStore('items')); tx.oncomplete = () => res(rq && rq.result); tx.onerror = () => rej(tx.error); }); }
+async function saveLib(o){
+  try {
+    const files = {};
+    if(view === 'gif'){ if(G.src === 'video' && vidFile && vidFile.size < 150e6) files.video = vidFile; if(G.src === 'images') files.images = gImgs.map(g => g.src); }
+    else if(E.base === 'photo' && cut){ files.orig = cut.orig.toDataURL('image/png'); files.work = cut.work.toDataURL('image/png'); }
+    if(drawActive()) files.draw = { d: JSON.stringify(D), frames: D.kind === 'frames' ? dFrames.map(f => f.toDataURL()) : [], photo: D.kind === 'photo' ? dPhotoSrc : null };
+    await libTx('readwrite', s => s.put({ id: uid(), date: Date.now(), mode: view, ...o, size: o.blob.size, type: o.blob.type, state: JSON.stringify(view === 'gif' ? G : E), files }));
+  } catch(e){ console.warn('library', e); }
+}
+let libUrls = [];
+async function renderLib(){
+  libUrls.forEach(u => URL.revokeObjectURL(u)); libUrls = [];
+  let items = []; try { items = (await libTx('readonly', s => s.getAll())) || []; } catch(e){}
+  items.sort((a, b) => b.date - a.date);
+  $('#libGrid').outerHTML = items.length ? `<div class="grid" id="libGrid">${items.map(it => { const u = URL.createObjectURL(it.blob); libUrls.push(u);
+    return `<div class="card" data-id="${it.id}"><div class="th">${it.type === 'video/mp4' ? `<video src="${u}" muted loop autoplay playsinline></video>` : `<img src="${u}" alt="">`}</div>
+      <div class="meta"><div class="nm">${esc(it.file)}</div><small>${it.mode === 'gif' ? 'GIF' : 'Emoji'} · ${esc(it.plat)} · ${it.w}×${it.h} · ${fmtSize(it.size)}</small>
+      <div class="row"><button class="btn small" data-a="dl">Stiahnuť</button><button class="btn small" data-a="edit">Upraviť</button><button class="btn small danger" data-a="del">Zmazať</button></div></div></div>`; }).join('')}</div>`
+    : '<div class="empty" id="libGrid">Knižnica je zatiaľ prázdna. Vytvor prvý GIF alebo emoji a klikni na Uložiť.</div>';
+  $('#libGrid').onclick = async e => {
+    const b = e.target.closest('button[data-a]'); if(!b) return; const id = b.closest('.card').dataset.id, it = items.find(x => x.id === id);
+    if(b.dataset.a === 'dl') download(it.blob, it.file);
+    else if(b.dataset.a === 'del'){ if(!b.dataset.arm){ b.dataset.arm = 1; b.textContent = 'Naozaj?'; setTimeout(() => { if(b.isConnected){ delete b.dataset.arm; b.textContent = 'Zmazať'; } }, 3000); return; } await libTx('readwrite', s => s.delete(id)); renderLib(); }
+    else if(b.dataset.a === 'edit') openItem(it);
+  };
+}
+async function openItem(it){
+  const st = JSON.parse(it.state), f = it.files || {};
+  if(it.mode === 'gif'){
+    Object.assign(G, st); gImgs = []; logoImg = null;
+    if(G.logo.src) logoImg = await loadImg(G.logo.src);
+    if(f.images){ for(const src of f.images) gImgs.push({ img: await loadImg(src), src }); renderStrip(); }
+    if(f.video){ const keep = { start: G.start, len: G.len }; setVideo(f.video); const prev = video.onloadedmetadata; video.onloadedmetadata = () => { prev(); Object.assign(G, keep); syncUI(); }; }
+    else if(G.src === 'video'){ G.src = 'none'; toast('Pôvodné video nebolo uložené (bolo príliš veľké). Vyber ho znova.', true); }
+  } else {
+    Object.assign(E, st); E.tool = 'view';
+    if(f.orig){ await setPhoto(f.orig); const w = await loadImg(f.work), x = cut.work.getContext('2d'); x.clearRect(0,0,cut.work.width,cut.work.height); x.drawImage(w, 0, 0, cut.work.width, cut.work.height); cutVer++; }
+  }
+  if(f.draw){
+    Object.assign(D, JSON.parse(f.draw.d)); dFrames = []; dUndo = [];
+    for(const src of f.draw.frames || []) dFrames.push(newFrame(await loadImg(src)));
+    if(f.draw.photo) await setDrawPhoto(f.draw.photo);
+    if(D.kind === 'frames') renderDStrip();
+  }
+  view = it.mode; $('#name').value = it.name; $('#name').dataset.touched = 1; syncUI();
+}
+
+/* ---------- init ---------- */
+DEF = JSON.stringify({ G, E, D });
+setCount(1);
+syncUI();
+document.fonts?.load(`900 40px ${FONT}`).catch(()=>{});
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
