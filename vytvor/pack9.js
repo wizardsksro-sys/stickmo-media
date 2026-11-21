@@ -6,6 +6,7 @@ const LBL = { sk:'＋ Vytvor si', cs:'＋ Vytvoř si', en:'＋ Create', de:'＋ 
 const CLOSE = { sk:'Zavrieť', cs:'Zavřít', en:'Close', de:'Schließen', es:'Cerrar', pl:'Zamknij' };
 window.STICKMO_PRO = () => { try{ return !!pro; }catch(e){ return false; } };
 window.STICKMO_UNLOCK = () => { try{ openPro(); }catch(e){} };
+window.STICKMO_LANG = () => { try{ return lang; }catch(e){ return 'sk'; } };
 
 const btn = document.createElement('button');
 btn.className = 'probtn'; btn.id = 'createBtn'; btn.style.background = 'var(--accent)';
@@ -35,6 +36,6 @@ function close(){ if(history.state && history.state.sheet === 'create') history.
 btn.onclick = open;
 sheet.querySelector('#createClose').onclick = close;
 addEventListener('popstate', () => { if(!(history.state && history.state.sheet === 'create')) hide(); });
-langSel.addEventListener('change', labels);
+langSel.addEventListener('change', () => { labels(); try{ frame.contentWindow.STICKMO_SETLANG(window.STICKMO_LANG()); }catch(e){} });
 labels();
 })();
