@@ -5,6 +5,8 @@ on:
     paths:
       - 'android/**'
       - '.github/workflows/android.yml'
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,3 +26,12 @@ jobs:
           name: stickmo-unsigned-aab
           path: android/app/build/outputs/bundle/release/*.aab
           retention-days: 7
+      - name: Publish unsigned bundle to android-build branch
+        run: |
+          mkdir out && cp android/app/build/outputs/bundle/release/*.aab out/stickmo-unsigned.aab
+          cd out
+          git init -q -b android-build
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add . && git commit -qm "Unsigned bundle from ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" android-build
