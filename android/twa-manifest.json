@@ -35,7 +35,7 @@
   "enableSiteSettingsShortcut": false,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "minSdkVersion": 21,
+  "minSdkVersion": 23,
   "orientation": "portrait",
   "fingerprints": [],
   "additionalTrustedOrigins": [],
