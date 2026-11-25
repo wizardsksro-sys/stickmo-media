@@ -20,7 +20,7 @@
     "path": "./stickmo-upload.jks",
     "alias": "stickmo"
   },
-  "appVersionCode": 1,
+  "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "fallbackType": "customtabs",
