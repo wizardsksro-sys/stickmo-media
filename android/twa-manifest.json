@@ -1,6 +1,6 @@
 {
   "packageId": "sk.wizardsk.stickmo",
-  "host": "stickmo.vercel.app",
+  "host": "stickmo.app",
   "name": "Stickmo",
   "launcherName": "Stickmo",
   "display": "standalone",
@@ -20,7 +20,7 @@
     "path": "./stickmo-upload.jks",
     "alias": "stickmo"
   },
-  "appVersionCode": 3,
+  "appVersionCode": 4,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "fallbackType": "customtabs",
