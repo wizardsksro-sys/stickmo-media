@@ -32,7 +32,7 @@ async function open(){
   if(!(history.state && history.state.sheet === 'create')) history.pushState({ sheet:'create' }, '');
 }
 function hide(){ sheet.hidden = true; document.body.style.overflow = ''; }
-function close(){ if(history.state && history.state.sheet === 'create') history.back(); else hide(); }
+function close(){ hide(); if(history.state && history.state.sheet === 'create') history.back(); }
 btn.onclick = open;
 sheet.querySelector('#createClose').onclick = close;
 addEventListener('popstate', () => { if(!(history.state && history.state.sheet === 'create')) hide(); });

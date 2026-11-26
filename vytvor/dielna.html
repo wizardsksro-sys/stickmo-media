@@ -572,6 +572,7 @@ function brushAt(ix, iy, rad){
 function canvasPt(e){ const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * cv.width/r.width, y: (e.clientY - r.top) * cv.height/r.height }; }
 const editing = () => view === 'emoji' && E.base === 'photo' && E.tool !== 'view' && cut;
 let painting = false;
+cv.addEventListener('click', () => { if(view === 'emoji' && E.base === 'photo' && !cut) $('#phIn').click(); });
 cv.addEventListener('pointerdown', e => {
   if(drawEditing()){ drawDown(e); return; }
   if(!editing()) return; const pt = canvasPt(e), f = editFit(cv.width, cv.height), ix = (pt.x - f.ox)/f.s, iy = (pt.y - f.oy)/f.s;
